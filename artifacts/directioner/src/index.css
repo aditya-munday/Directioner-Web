@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-blueprint: hsl(var(--blueprint));
+  --color-blueprint-foreground: hsl(var(--blueprint-foreground));
+
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius: 0;
+}
+
+:root {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 96%;
+  --border: 0 0% 100% / 0.08;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 0 0% 100% / 0.08;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 96%;
+  --popover-border: 0 0% 100% / 0.08;
+  --primary: 53 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 53%;
+  --accent: 160 100% 48%;
+  --accent-foreground: 0 0% 0%;
+  --blueprint: 213 65% 17%;
+  --blueprint-foreground: 0 0% 96%;
+  --input: 0 0% 100% / 0.08;
+  --ring: 53 100% 50%;
+}
+
+.dark {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 96%;
+  --border: 0 0% 100% / 0.08;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 0 0% 100% / 0.08;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 96%;
+  --popover-border: 0 0% 100% / 0.08;
+  --primary: 53 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 53%;
+  --accent: 160 100% 48%;
+  --accent-foreground: 0 0% 0%;
+  --blueprint: 213 65% 17%;
+  --blueprint-foreground: 0 0% 96%;
+  --input: 0 0% 100% / 0.08;
+  --ring: 53 100% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight uppercase;
+  }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0D0D0D; }
+::-webkit-scrollbar-thumb { background: #FFE500; }
+::-webkit-scrollbar-thumb:hover { background: #fff; }
+
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@layer utilities {
+  .animate-ticker { animation: ticker 40s linear infinite; }
+  .animate-ticker-fast { animation: ticker 20s linear infinite; }
+
+  .hatch-pattern {
+    background-image: repeating-linear-gradient(45deg, rgba(255, 229, 0, 0.05) 0, rgba(255, 229, 0, 0.05) 1px, transparent 1px, transparent 8px);
+  }
+  .hatch-pattern-dense {
+    background-image: repeating-linear-gradient(45deg, rgba(255, 229, 0, 0.1) 0, rgba(255, 229, 0, 0.1) 1px, transparent 1px, transparent 4px);
+  }
+  .corner-brackets {
+    position: relative;
+  }
+  .corner-brackets::before, .corner-brackets::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 2px solid currentColor;
+    transition: all 0.2s ease;
+  }
+  .corner-brackets::before {
+    top: 4px;
+    left: 4px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .corner-brackets::after {
+    bottom: 4px;
+    right: 4px;
+    border-left: 0;
+    border-top: 0;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
