@@ -39,133 +39,152 @@
   --font-display: 'TASA Orbiter Display', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius: 4px;
 }
 
 :root {
-  --background: 0 0% 5%;
-  --foreground: 0 0% 96%;
-  --border: 0 0% 100% / 0.10;
-  --card: 0 0% 8%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 0 0% 100% / 0.08;
-  --popover: 0 0% 5%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 0 0% 100% / 0.08;
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 95%;
+  --border: 0 0% 100% / 0.07;
+  --card: 240 10% 5.5%;
+  --card-foreground: 0 0% 95%;
+  --card-border: 0 0% 100% / 0.06;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 95%;
+  --popover-border: 0 0% 100% / 0.06;
   --primary: 53 100% 50%;
   --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 50%;
+  --secondary: 240 5% 12%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 240 5% 10%;
+  --muted-foreground: 0 0% 42%;
   --accent: 160 100% 48%;
   --accent-foreground: 0 0% 0%;
   --blueprint: 213 65% 17%;
   --blueprint-foreground: 0 0% 96%;
-  --input: 0 0% 100% / 0.08;
+  --input: 0 0% 100% / 0.06;
   --ring: 53 100% 50%;
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
-    @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
+    @apply font-sans antialiased bg-background text-foreground;
+    background-color: #070708;
+    selection-background-color: #FFE500;
+    selection-color: #000;
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
-  }
+  ::selection { background: #FFE500; color: #000; }
+  h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; }
 }
 
-/* ── Scrollbar ────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0D0D0D; }
-::-webkit-scrollbar-thumb { background: #FFE500; }
-::-webkit-scrollbar-thumb:hover { background: #fff; }
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #0a0a0b; }
+::-webkit-scrollbar-thumb { background: #FFE50040; }
+::-webkit-scrollbar-thumb:hover { background: #FFE500; }
 
-/* ── Ticker animation ─────────────────────────────────────────── */
+/* ── Grain overlay ────────────────────────────────────── */
+.grain-overlay {
+  position: fixed;
+  inset: -100%;
+  width: 300%;
+  height: 300%;
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  animation: grain-drift 0.15s steps(1) infinite;
+}
+@keyframes grain-drift {
+  0%   { transform: translate(0,   0  ); }
+  10%  { transform: translate(-3%, -1%); }
+  20%  { transform: translate(2%,  3% ); }
+  30%  { transform: translate(-1%, -2%); }
+  40%  { transform: translate(3%,  1% ); }
+  50%  { transform: translate(-2%, 3% ); }
+  60%  { transform: translate(1%,  -3%); }
+  70%  { transform: translate(-3%, 2% ); }
+  80%  { transform: translate(2%,  -1%); }
+  90%  { transform: translate(-1%, 3% ); }
+  100% { transform: translate(0,   0  ); }
+}
+
+/* ── Ticker animation ─────────────────────────────────── */
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes wave-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ticker-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
 @layer utilities {
-  .animate-ticker { animation: ticker 40s linear infinite; }
-  .animate-ticker-fast { animation: ticker 20s linear infinite; }
+  .animate-ticker     { animation: ticker     40s linear infinite; }
+  .animate-ticker-rev { animation: ticker-rev 40s linear infinite; }
+  .animate-ticker-fast { animation: ticker    22s linear infinite; }
 
-  /* Motion.dev style dot grid */
+  /* Floating bob */
+  .animate-float-a { animation: float-a 6s ease-in-out infinite; }
+  .animate-float-b { animation: float-a 8s ease-in-out infinite 1s; }
+  .animate-float-c { animation: float-a 7s ease-in-out infinite 0.5s; }
+  .animate-float-d { animation: float-a 9s ease-in-out infinite 1.5s; }
+  @keyframes float-a {
+    0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+    50%       { transform: translateY(-10px) rotate(var(--rot, 0deg)); }
+  }
+
+  /* Gradient glow pulse */
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+  }
+
+  /* Dot grid — subtle */
   .dot-grid {
-    background-image:
-      radial-gradient(circle, #0D0D0D 0.6px, transparent 1.1px),
-      radial-gradient(circle, #0D0D0D 0.6px, transparent 1.1px);
-    background-size: 14px 14px, 14px 14px;
-    background-position: 1px calc(50% + 1px), 8px calc(50% + 8px);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  /* Yellow-bg dot grid */
-  .dot-grid-yellow {
-    background-image:
-      radial-gradient(circle, #c9b200 0.6px, transparent 1.1px),
-      radial-gradient(circle, #c9b200 0.6px, transparent 1.1px);
-    background-size: 14px 14px, 14px 14px;
-    background-position: 1px calc(50% + 1px), 8px calc(50% + 8px);
+  /* Card hover glow */
+  .card-hover {
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card-hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,229,0,0.04), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .card-hover:hover::before { opacity: 1; }
+
+  /* Section fade-in line */
+  .section-line {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
   }
 
-  /* Hatch pattern — motion.dev style 119deg */
-  .hatch-pattern {
-    background-image: repeating-linear-gradient(
-      119deg,
-      color-mix(in srgb, #FFE500 28%, transparent) 0px,
-      color-mix(in srgb, #FFE500 28%, transparent) 1px,
-      transparent 1px,
-      transparent 6px
-    );
-  }
-  .hatch-pattern-dense {
-    background-image: repeating-linear-gradient(
-      119deg,
-      color-mix(in srgb, #FFE500 40%, transparent) 0px,
-      color-mix(in srgb, #FFE500 40%, transparent) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-  }
-  .hatch-pattern-dark {
-    background-image: repeating-linear-gradient(
-      119deg,
-      rgba(0,0,0,0.15) 0px,
-      rgba(0,0,0,0.15) 1px,
-      transparent 1px,
-      transparent 6px
-    );
+  /* Text gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Corner bracket decoration — motion.dev uses gradient corners */
-  .corner-brackets {
-    background-image:
-      linear-gradient(to right, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
-      linear-gradient(to right, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
-      linear-gradient(to bottom, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
-      linear-gradient(to bottom, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px));
-    background-size: 100% 2px, 100% 2px, 2px 100%, 2px 100%;
-    background-position: 0 0, 0 100%, 0 0, 100% 0;
-    background-repeat: no-repeat;
-  }
-
-  /* Ruler decoration */
-  .ruler-line {
-    background-image:
-      linear-gradient(to right, currentColor 0, currentColor 100%),
-      linear-gradient(to right, currentColor 1px, transparent 1px),
-      linear-gradient(to right, currentColor 1px, transparent 1px);
-    background-size: 100% 1px, 40px 12px, 20px 6px;
-    background-position: 0 bottom, 0 bottom, 0 bottom;
-    background-repeat: no-repeat, repeat-x, repeat-x;
-    background-origin: content-box;
-    background-clip: content-box;
+  .text-gradient-yellow {
+    background: linear-gradient(135deg, #FFE500 0%, #ff9500 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .hide-scrollbar::-webkit-scrollbar { display: none; }

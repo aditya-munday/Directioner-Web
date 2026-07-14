@@ -1,21 +1,51 @@
 import { Link, useLocation } from "wouter";
-import { motion, useScroll } from "framer-motion";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { motion, useScroll, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowUpRight } from "lucide-react";
+
+const NAV_LINKS = [
+  { href: "/features",   label: "Features"   },
+  { href: "/commands",   label: "Commands"   },
+  { href: "/use-cases",  label: "Use Cases"  },
+  { href: "/pricing",    label: "Pricing"    },
+  { href: "/about",      label: "About"      },
+];
+
+function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <Link href="/" className="flex items-center gap-2.5 group">
+      {/* Three-dot cluster */}
+      <div className="flex gap-[3px] items-center">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="rounded-full"
+            style={{ width: i === 1 ? 7 : 5, height: i === 1 ? 7 : 5, background: light ? "#000" : "#FFE500" }}
+            whileHover={{ scale: 1.4 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          />
+        ))}
+      </div>
+      <span
+        className="font-display font-bold text-[15px] tracking-tight transition-colors"
+        style={{ color: light ? "#000" : "#fff", letterSpacing: "-0.02em" }}
+      >
+        Directioner
+      </span>
+    </Link>
+  );
+}
 
 export function Navbar() {
   const { scrollY } = useScroll();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const [location] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    return scrollY.on("change", (latest) => {
-      setIsScrolled(latest > 50);
-    });
+    return scrollY.on("change", (v) => setScrolled(v > 60));
   }, [scrollY]);
 
   if (location.startsWith("/dashboard")) return null;
@@ -23,56 +53,39 @@ export function Navbar() {
   return (
     <>
       <motion.nav
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-colors duration-300 border-b",
-          isScrolled
-            ? "bg-primary border-transparent"
-            : "bg-[#0D0D0D]/95 border-border backdrop-blur-sm"
-        )}
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        style={{
+          background: scrolled ? "rgba(7,7,8,0.92)" : "rgba(7,7,8,0.6)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)"}`,
+        }}
       >
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          {/* Logo — motion.dev style: icon + text */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex gap-0.5">
-              {[0, 1, 2].map(i => (
-                <div key={i} className={cn(
-                  "w-2 h-2 transition-colors",
-                  isScrolled ? "bg-black" : "bg-primary"
-                )} />
-              ))}
-            </div>
-            <span className={cn(
-              "font-display font-bold text-base tracking-tight transition-colors",
-              isScrolled ? "text-black" : "text-white"
-            )}>
-              Directioner
-            </span>
-          </Link>
+          <Logo />
 
-          {/* Nav links */}
-          <div className={cn(
-            "hidden md:flex items-center gap-6 font-mono text-[11px] uppercase font-medium transition-colors",
-            isScrolled ? "text-black/70" : "text-white/70"
-          )}>
-            {[
-              { href: "/features", label: "Features" },
-              { href: "/commands", label: "Commands" },
-              { href: "/use-cases", label: "Use Cases" },
-              { href: "/explore", label: "Explore" },
-              { href: "/pricing", label: "Pricing" },
-              { href: "/faq", label: "FAQ" },
-            ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "hover:opacity-100 transition-opacity",
-                  location === href ? "opacity-100 font-bold" : "opacity-60"
-                )}
-              >
-                {label}
-              </Link>
-            ))}
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-7">
+            {NAV_LINKS.map(({ href, label }) => {
+              const active = location === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="relative font-mono text-[11px] uppercase tracking-wide transition-colors"
+                  style={{ color: active ? "#fff" : "rgba(255,255,255,0.42)" }}
+                >
+                  <span className="hover:text-white transition-colors">{label}</span>
+                  {active && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute -bottom-[1px] left-0 right-0 h-px bg-primary"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA */}
@@ -80,12 +93,8 @@ export function Navbar() {
             {user ? (
               <Link
                 href="/dashboard"
-                className={cn(
-                  "font-mono text-[11px] uppercase font-bold px-4 py-2 border transition-colors",
-                  isScrolled
-                    ? "border-black text-black hover:bg-black hover:text-primary"
-                    : "border-border text-white hover:border-primary hover:text-primary"
-                )}
+                className="font-mono text-[11px] uppercase tracking-wide px-4 py-2 transition-all"
+                style={{ color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}
               >
                 Dashboard
               </Link>
@@ -93,79 +102,95 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className={cn(
-                    "font-mono text-[11px] uppercase transition-opacity hover:opacity-100 opacity-60",
-                    isScrolled ? "text-black" : "text-white"
-                  )}
+                  className="font-mono text-[11px] uppercase tracking-wide transition-colors"
+                  style={{ color: "rgba(255,255,255,0.38)" }}
                 >
                   Sign In
                 </Link>
-                {/* motion.dev-style corner-bracket CTA button */}
-                <Link
-                  href="/register"
-                  className={cn(
-                    "corner-brackets font-mono text-[11px] uppercase font-bold px-5 py-2 transition-colors",
-                    isScrolled
-                      ? "bg-black text-primary hover:bg-black/80"
-                      : "bg-primary text-black hover:bg-white"
-                  )}
-                >
-                  ADD TO DISCORD ↗
-                </Link>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide font-bold px-4 py-2 transition-all"
+                    style={{ background: "#FFE500", color: "#000" }}
+                  >
+                    Add to Discord
+                    <ArrowUpRight size={12} />
+                  </Link>
+                </motion.div>
               </>
             )}
           </div>
 
+          {/* Hamburger */}
           <button
-            className={cn("md:hidden transition-colors", isScrolled ? "text-black" : "text-white")}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white/60 hover:text-white transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            <AnimatePresence mode="wait" initial={false}>
+              {mobileOpen ? (
+                <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <X size={22} />
+                </motion.div>
+              ) : (
+                <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <Menu size={22} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
         </div>
       </motion.nav>
 
       {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          className="fixed inset-0 z-40 bg-[#0D0D0D] pt-16 px-6 flex flex-col"
-        >
-          <div className="border-b border-border py-6 space-y-4 font-mono text-sm uppercase">
-            {[
-              { href: "/features", label: "Features" },
-              { href: "/commands", label: "Commands" },
-              { href: "/use-cases", label: "Use Cases" },
-              { href: "/explore", label: "Explore" },
-              { href: "/pricing", label: "Pricing" },
-              { href: "/faq", label: "FAQ" },
-            ].map(({ href, label }) => (
-              <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block text-white/80 hover:text-primary transition-colors py-1">
-                {label}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-40 flex flex-col pt-14"
+            style={{ background: "rgba(7,7,8,0.98)", backdropFilter: "blur(30px)" }}
+          >
+            <div className="px-6 py-8 space-y-1">
+              {NAV_LINKS.map(({ href, label }, i) => (
+                <motion.div
+                  key={href}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block font-display font-bold text-3xl text-white/80 hover:text-white transition-colors py-3"
+                    style={{ letterSpacing: "-0.02em" }}
+                  >
+                    {label}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+            <div className="px-6 mt-auto pb-10 space-y-3">
+              <Link
+                href="/register"
+                onClick={() => setMobileOpen(false)}
+                className="block bg-primary text-black font-mono text-sm font-bold uppercase tracking-wide py-4 text-center"
+              >
+                Add to Discord ↗
               </Link>
-            ))}
-          </div>
-          <div className="pt-6 space-y-3">
-            {user ? (
-              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="block bg-primary text-black font-mono text-sm font-bold uppercase py-3 text-center">
-                Dashboard
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block text-white/40 font-mono text-sm uppercase tracking-wide py-3 text-center"
+              >
+                Sign In
               </Link>
-            ) : (
-              <>
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block text-white/70 font-mono text-sm uppercase py-2">
-                  Sign In
-                </Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="block bg-primary text-black font-mono text-sm font-bold uppercase py-3 text-center corner-brackets">
-                  Add to Discord ↗
-                </Link>
-              </>
-            )}
-          </div>
-        </motion.div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -175,66 +200,62 @@ export function Footer() {
   if (location.startsWith("/dashboard")) return null;
 
   return (
-    <footer className="border-t border-border bg-card">
-      {/* Top slash bar — motion.dev style */}
-      <div className="flex items-center px-6 py-3 border-b border-border overflow-hidden">
-        <span className="font-mono text-white/20 text-xs mr-4">+</span>
-        <div className="flex-1 overflow-hidden">
-          <div className="font-mono text-xs text-white/10 whitespace-nowrap animate-ticker inline-block">
-            {"//".repeat(120)}
-          </div>
-        </div>
-        <span className="font-mono text-white/20 text-xs ml-4">+</span>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
-        <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
+    <footer style={{ background: "#070708", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-10">
+        <div className="flex flex-col md:flex-row justify-between gap-14 mb-14">
           <div className="max-w-xs">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex gap-0.5">
-                {[0, 1, 2].map(i => <div key={i} className="w-2 h-2 bg-primary" />)}
-              </div>
-              <span className="font-display font-bold text-base text-white">Directioner</span>
-            </div>
-            <div className="font-mono text-[10px] text-muted-foreground mb-4">
-              // DISCORD BOT ——————— V1.0.0
-            </div>
-            <p className="font-mono text-[11px] text-muted-foreground leading-relaxed">
-              Production-grade AI for Discord communities. Built for precision, performance, and scale.
+            <Logo />
+            <p className="font-mono text-[11px] leading-relaxed mt-5"
+              style={{ color: "rgba(255,255,255,0.3)" }}>
+              Production-grade AI for Discord communities. Memory, voice, and 12 AI modes in one bot.
             </p>
           </div>
 
-          <div className="flex gap-12 md:gap-16 font-mono text-[11px] uppercase">
+          <div className="flex gap-14 font-mono text-[11px] uppercase">
             <div className="flex flex-col gap-3">
-              <span className="text-primary font-bold text-[10px] mb-1">Product</span>
-              {["/features", "/commands", "/use-cases", "/explore", "/pricing"].map(href => (
-                <Link key={href} href={href} className="text-muted-foreground hover:text-white transition-colors capitalize">
+              <span className="text-primary text-[9px] tracking-[0.2em] mb-1">Product</span>
+              {["/features", "/commands", "/use-cases", "/pricing"].map((href) => (
+                <Link key={href} href={href}
+                  className="transition-colors"
+                  style={{ color: "rgba(255,255,255,0.32)" }}
+                >
                   {href.slice(1).replace(/-/g, " ")}
                 </Link>
               ))}
             </div>
             <div className="flex flex-col gap-3">
-              <span className="text-primary font-bold text-[10px] mb-1">Company</span>
-              {["/about", "/faq", "/contact"].map(href => (
-                <Link key={href} href={href} className="text-muted-foreground hover:text-white transition-colors capitalize">
+              <span className="text-primary text-[9px] tracking-[0.2em] mb-1">Company</span>
+              {["/about", "/faq", "/contact"].map((href) => (
+                <Link key={href} href={href}
+                  className="transition-colors"
+                  style={{ color: "rgba(255,255,255,0.32)" }}
+                >
                   {href.slice(1)}
                 </Link>
               ))}
             </div>
             <div className="flex flex-col gap-3">
-              <span className="text-primary font-bold text-[10px] mb-1">Legal</span>
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(l => (
-                <a key={l} href="#" className="text-muted-foreground hover:text-white transition-colors">{l}</a>
+              <span className="text-primary text-[9px] tracking-[0.2em] mb-1">Legal</span>
+              {["Privacy", "Terms", "Cookies"].map((l) => (
+                <a key={l} href="#"
+                  className="transition-colors"
+                  style={{ color: "rgba(255,255,255,0.32)" }}>
+                  {l}
+                </a>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="font-mono text-[10px] text-muted-foreground">
+        <div
+          className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+        >
+          <div className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
             © {new Date().getFullYear()} Directioner. All rights reserved.
           </div>
-          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-1">
+          <div className="font-mono text-[10px] flex items-center gap-1"
+            style={{ color: "rgba(255,255,255,0.2)" }}>
             Payments by
             <span className="text-primary font-bold ml-1">Razorpay</span>
           </div>
