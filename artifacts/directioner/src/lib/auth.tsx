@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Seed demo data for a new user
   const seedIfNeeded = useCallback(async (userId: string) => {
+    if (!supabase) return;
     // Non-fatal: seed function may not exist yet in some environments.
     try {
       await supabase.rpc('seed_demo_data', { p_user_id: userId });
@@ -63,6 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   useEffect(() => {
+    // If Supabase is not configured, skip auth setup
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session: s } }: { data: { session: Session | null } }) => {
       setSession(s);
