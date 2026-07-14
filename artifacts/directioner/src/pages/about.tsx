@@ -39,6 +39,21 @@ export default function About() {
       <section className="py-24 px-6 max-w-7xl mx-auto border-b border-border">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="space-y-6">
+            <SectionLabel number="01" label="THE STORY" />
+            <div className="space-y-5 font-mono text-sm text-muted-foreground leading-relaxed">
+              <p>Discord is where the internet lives. 500M registered users, millions of active servers — yet managing and enriching those communities has always been a human-only, exhausting endeavor.</p>
+              <p>Directioner was born from frustration. Our gaming server was growing fast, but keeping members engaged, answering repetitive questions, and maintaining personality 24/7 was impossible.</p>
+              <p>We didn't want another command bot. We wanted something that felt like a real community member — something that remembered you, understood context, had personality, and could switch from homework help to trivia to code review, all in the same server.</p>
+            </div>
+          </div>
+          <div className="relative border border-border overflow-hidden aspect-square bg-card dot-grid">
+            <img src={aiBrainSrc} alt="AI Brain" className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity" />
+            <div className="absolute bottom-4 left-4 font-mono text-[10px] text-primary border border-primary/30 bg-black/80 px-2 py-1">
+              FIG.01 // CORE_LOGIC
+            </div>
+            <div className="absolute top-4 right-4 font-mono text-[10px] text-muted-foreground">V1.0.0</div>
+          </div>
+          <div className="space-y-6">
             <SectionLabel number="01" name="THE STORY" />
             <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
               <p>Discord is where the internet lives. 500M registered users, millions of active servers, and yet — managing, engaging, and enriching those communities has always been a human-only, exhausting endeavor.</p>

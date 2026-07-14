@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=TASA+Orbiter+Display:wght@300..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -36,7 +36,7 @@
   --color-blueprint-foreground: hsl(var(--blueprint-foreground));
 
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-display: 'TASA Orbiter Display', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --radius-sm: 0;
@@ -49,7 +49,7 @@
 :root {
   --background: 0 0% 5%;
   --foreground: 0 0% 96%;
-  --border: 0 0% 100% / 0.08;
+  --border: 0 0% 100% / 0.10;
   --card: 0 0% 8%;
   --card-foreground: 0 0% 96%;
   --card-border: 0 0% 100% / 0.08;
@@ -60,32 +60,8 @@
   --primary-foreground: 0 0% 0%;
   --secondary: 0 0% 15%;
   --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 53%;
-  --accent: 160 100% 48%;
-  --accent-foreground: 0 0% 0%;
-  --blueprint: 213 65% 17%;
-  --blueprint-foreground: 0 0% 96%;
-  --input: 0 0% 100% / 0.08;
-  --ring: 53 100% 50%;
-}
-
-.dark {
-  --background: 0 0% 5%;
-  --foreground: 0 0% 96%;
-  --border: 0 0% 100% / 0.08;
-  --card: 0 0% 8%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 0 0% 100% / 0.08;
-  --popover: 0 0% 5%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 0 0% 100% / 0.08;
-  --primary: 53 100% 50%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 53%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 50%;
   --accent: 160 100% 48%;
   --accent-foreground: 0 0% 0%;
   --blueprint: 213 65% 17%;
@@ -102,55 +78,96 @@
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight uppercase;
+    @apply font-display tracking-tight;
   }
 }
 
+/* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0D0D0D; }
 ::-webkit-scrollbar-thumb { background: #FFE500; }
 ::-webkit-scrollbar-thumb:hover { background: #fff; }
 
+/* ── Ticker animation ─────────────────────────────────────────── */
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes wave-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 @layer utilities {
   .animate-ticker { animation: ticker 40s linear infinite; }
   .animate-ticker-fast { animation: ticker 20s linear infinite; }
 
+  /* Motion.dev style dot grid */
+  .dot-grid {
+    background-image:
+      radial-gradient(circle, #0D0D0D 0.6px, transparent 1.1px),
+      radial-gradient(circle, #0D0D0D 0.6px, transparent 1.1px);
+    background-size: 14px 14px, 14px 14px;
+    background-position: 1px calc(50% + 1px), 8px calc(50% + 8px);
+  }
+
+  /* Yellow-bg dot grid */
+  .dot-grid-yellow {
+    background-image:
+      radial-gradient(circle, #c9b200 0.6px, transparent 1.1px),
+      radial-gradient(circle, #c9b200 0.6px, transparent 1.1px);
+    background-size: 14px 14px, 14px 14px;
+    background-position: 1px calc(50% + 1px), 8px calc(50% + 8px);
+  }
+
+  /* Hatch pattern — motion.dev style 119deg */
   .hatch-pattern {
-    background-image: repeating-linear-gradient(45deg, rgba(255, 229, 0, 0.05) 0, rgba(255, 229, 0, 0.05) 1px, transparent 1px, transparent 8px);
+    background-image: repeating-linear-gradient(
+      119deg,
+      color-mix(in srgb, #FFE500 28%, transparent) 0px,
+      color-mix(in srgb, #FFE500 28%, transparent) 1px,
+      transparent 1px,
+      transparent 6px
+    );
   }
   .hatch-pattern-dense {
-    background-image: repeating-linear-gradient(45deg, rgba(255, 229, 0, 0.1) 0, rgba(255, 229, 0, 0.1) 1px, transparent 1px, transparent 4px);
+    background-image: repeating-linear-gradient(
+      119deg,
+      color-mix(in srgb, #FFE500 40%, transparent) 0px,
+      color-mix(in srgb, #FFE500 40%, transparent) 1px,
+      transparent 1px,
+      transparent 4px
+    );
   }
+  .hatch-pattern-dark {
+    background-image: repeating-linear-gradient(
+      119deg,
+      rgba(0,0,0,0.15) 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+  }
+
+  /* Corner bracket decoration — motion.dev uses gradient corners */
   .corner-brackets {
-    position: relative;
+    background-image:
+      linear-gradient(to right, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
+      linear-gradient(to right, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
+      linear-gradient(to bottom, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px)),
+      linear-gradient(to bottom, currentColor 8px, transparent 8px, transparent calc(100% - 8px), currentColor calc(100% - 8px));
+    background-size: 100% 2px, 100% 2px, 2px 100%, 2px 100%;
+    background-position: 0 0, 0 100%, 0 0, 100% 0;
+    background-repeat: no-repeat;
   }
-  .corner-brackets::before, .corner-brackets::after {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border: 2px solid currentColor;
-    transition: all 0.2s ease;
+
+  /* Ruler decoration */
+  .ruler-line {
+    background-image:
+      linear-gradient(to right, currentColor 0, currentColor 100%),
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to right, currentColor 1px, transparent 1px);
+    background-size: 100% 1px, 40px 12px, 20px 6px;
+    background-position: 0 bottom, 0 bottom, 0 bottom;
+    background-repeat: no-repeat, repeat-x, repeat-x;
+    background-origin: content-box;
+    background-clip: content-box;
   }
-  .corner-brackets::before {
-    top: 4px;
-    left: 4px;
-    border-right: 0;
-    border-bottom: 0;
-  }
-  .corner-brackets::after {
-    bottom: 4px;
-    right: 4px;
-    border-left: 0;
-    border-top: 0;
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

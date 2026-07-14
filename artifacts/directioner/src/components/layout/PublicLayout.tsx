@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { Menu, X } from "lucide-react";
-import logoSrc from "@assets/Directioner_1783857395826.png";
 
 export function Navbar() {
   const { scrollY } = useScroll();
@@ -19,7 +18,6 @@ export function Navbar() {
     });
   }, [scrollY]);
 
-  // Don't show public navbar on dashboard routes
   if (location.startsWith("/dashboard")) return null;
 
   return (
@@ -27,68 +25,146 @@ export function Navbar() {
       <motion.nav
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-colors duration-300 border-b",
-          isScrolled 
-            ? "bg-primary text-primary-foreground border-transparent" 
-            : "bg-transparent text-foreground border-border backdrop-blur-sm"
+          isScrolled
+            ? "bg-primary border-transparent"
+            : "bg-[#0D0D0D]/95 border-border backdrop-blur-sm"
         )}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 font-display font-bold text-xl tracking-tighter">
-            <img src={logoSrc} alt="Directioner" className="w-8 h-8 object-contain mix-blend-difference" />
-            <span className={cn(isScrolled && "text-black")}>DIRECTIONER</span>
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+          {/* Logo — motion.dev style: icon + text */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex gap-0.5">
+              {[0, 1, 2].map(i => (
+                <div key={i} className={cn(
+                  "w-2 h-2 transition-colors",
+                  isScrolled ? "bg-black" : "bg-primary"
+                )} />
+              ))}
+            </div>
+            <span className={cn(
+              "font-display font-bold text-base tracking-tight transition-colors",
+              isScrolled ? "text-black" : "text-white"
+            )}>
+              Directioner
+            </span>
           </Link>
-          
-          <div className="hidden md:flex items-center gap-6 font-mono text-xs uppercase font-medium">
-            <Link href="/features" className="hover:opacity-70 transition-opacity">Features</Link>
-            <Link href="/commands" className="hover:opacity-70 transition-opacity">Commands</Link>
-            <Link href="/use-cases" className="hover:opacity-70 transition-opacity">Use Cases</Link>
-            <Link href="/explore" className="hover:opacity-70 transition-opacity">Explore</Link>
-            <Link href="/pricing" className="hover:opacity-70 transition-opacity">Pricing</Link>
-            <Link href="/faq" className="hover:opacity-70 transition-opacity">FAQ</Link>
+
+          {/* Nav links */}
+          <div className={cn(
+            "hidden md:flex items-center gap-6 font-mono text-[11px] uppercase font-medium transition-colors",
+            isScrolled ? "text-black/70" : "text-white/70"
+          )}>
+            {[
+              { href: "/features", label: "Features" },
+              { href: "/commands", label: "Commands" },
+              { href: "/use-cases", label: "Use Cases" },
+              { href: "/explore", label: "Explore" },
+              { href: "/pricing", label: "Pricing" },
+              { href: "/faq", label: "FAQ" },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "hover:opacity-100 transition-opacity",
+                  location === href ? "opacity-100 font-bold" : "opacity-60"
+                )}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          {/* CTA */}
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <Link href="/dashboard" className="font-mono text-xs uppercase px-4 py-2 border border-current hover:bg-foreground/10 transition-colors">
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "font-mono text-[11px] uppercase font-bold px-4 py-2 border transition-colors",
+                  isScrolled
+                    ? "border-black text-black hover:bg-black hover:text-primary"
+                    : "border-border text-white hover:border-primary hover:text-primary"
+                )}
+              >
                 Dashboard
               </Link>
             ) : (
               <>
-                <Link href="/login" className="font-mono text-xs uppercase hover:opacity-70">Sign In</Link>
-                <Link href="/register" className={cn(
-                  "font-mono text-xs uppercase px-4 py-2 corner-brackets transition-colors",
-                  isScrolled ? "bg-black text-primary" : "bg-primary text-black"
-                )}>
-                  Add to Discord ↗
+                <Link
+                  href="/login"
+                  className={cn(
+                    "font-mono text-[11px] uppercase transition-opacity hover:opacity-100 opacity-60",
+                    isScrolled ? "text-black" : "text-white"
+                  )}
+                >
+                  Sign In
+                </Link>
+                {/* motion.dev-style corner-bracket CTA button */}
+                <Link
+                  href="/register"
+                  className={cn(
+                    "corner-brackets font-mono text-[11px] uppercase font-bold px-5 py-2 transition-colors",
+                    isScrolled
+                      ? "bg-black text-primary hover:bg-black/80"
+                      : "bg-primary text-black hover:bg-white"
+                  )}
+                >
+                  ADD TO DISCORD ↗
                 </Link>
               </>
             )}
           </div>
 
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button
+            className={cn("md:hidden transition-colors", isScrolled ? "text-black" : "text-white")}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </motion.nav>
 
+      {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur pt-24 px-6 flex flex-col gap-6 font-mono text-sm uppercase">
-          <Link href="/features" onClick={()=>setMobileMenuOpen(false)}>Features</Link>
-          <Link href="/commands" onClick={()=>setMobileMenuOpen(false)}>Commands</Link>
-          <Link href="/use-cases" onClick={()=>setMobileMenuOpen(false)}>Use Cases</Link>
-          <Link href="/explore" onClick={()=>setMobileMenuOpen(false)}>Explore</Link>
-          <Link href="/pricing" onClick={()=>setMobileMenuOpen(false)}>Pricing</Link>
-          <Link href="/faq" onClick={()=>setMobileMenuOpen(false)}>FAQ</Link>
-          <hr className="border-border" />
-          {user ? (
-             <Link href="/dashboard" onClick={()=>setMobileMenuOpen(false)}>Dashboard</Link>
-          ) : (
-            <>
-              <Link href="/login" onClick={()=>setMobileMenuOpen(false)}>Sign In</Link>
-              <Link href="/register" onClick={()=>setMobileMenuOpen(false)} className="bg-primary text-black px-4 py-2 text-center w-full mt-4">Add to Discord</Link>
-            </>
-          )}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          className="fixed inset-0 z-40 bg-[#0D0D0D] pt-16 px-6 flex flex-col"
+        >
+          <div className="border-b border-border py-6 space-y-4 font-mono text-sm uppercase">
+            {[
+              { href: "/features", label: "Features" },
+              { href: "/commands", label: "Commands" },
+              { href: "/use-cases", label: "Use Cases" },
+              { href: "/explore", label: "Explore" },
+              { href: "/pricing", label: "Pricing" },
+              { href: "/faq", label: "FAQ" },
+            ].map(({ href, label }) => (
+              <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block text-white/80 hover:text-primary transition-colors py-1">
+                {label}
+              </Link>
+            ))}
+          </div>
+          <div className="pt-6 space-y-3">
+            {user ? (
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="block bg-primary text-black font-mono text-sm font-bold uppercase py-3 text-center">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block text-white/70 font-mono text-sm uppercase py-2">
+                  Sign In
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="block bg-primary text-black font-mono text-sm font-bold uppercase py-3 text-center corner-brackets">
+                  Add to Discord ↗
+                </Link>
+              </>
+            )}
+          </div>
+        </motion.div>
       )}
     </>
   );
@@ -99,48 +175,69 @@ export function Footer() {
   if (location.startsWith("/dashboard")) return null;
 
   return (
-    <footer className="border-t border-border bg-card pt-16 pb-8 px-6">
-      <div className="max-w-7xl mx-auto">
+    <footer className="border-t border-border bg-card">
+      {/* Top slash bar — motion.dev style */}
+      <div className="flex items-center px-6 py-3 border-b border-border overflow-hidden">
+        <span className="font-mono text-white/20 text-xs mr-4">+</span>
+        <div className="flex-1 overflow-hidden">
+          <div className="font-mono text-xs text-white/10 whitespace-nowrap animate-ticker inline-block">
+            {"//".repeat(120)}
+          </div>
+        </div>
+        <span className="font-mono text-white/20 text-xs ml-4">+</span>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
         <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
-          <div className="max-w-sm">
-            <div className="flex items-center gap-3 font-display font-bold text-xl tracking-tighter mb-4">
-              <img src={logoSrc} alt="Directioner" className="w-8 h-8 object-contain" />
-              <span>DIRECTIONER</span>
+          <div className="max-w-xs">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex gap-0.5">
+                {[0, 1, 2].map(i => <div key={i} className="w-2 h-2 bg-primary" />)}
+              </div>
+              <span className="font-display font-bold text-base text-white">Directioner</span>
             </div>
-            <div className="font-mono text-xs text-muted-foreground mb-6">
-              // DISCORD BOT ——————————————— V1.0.0
+            <div className="font-mono text-[10px] text-muted-foreground mb-4">
+              // DISCORD BOT ——————— V1.0.0
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground leading-relaxed">
               Production-grade AI for Discord communities. Built for precision, performance, and scale.
             </p>
           </div>
-          
-          <div className="flex gap-16 font-mono text-xs uppercase">
-            <div className="flex flex-col gap-4">
-              <span className="text-primary font-bold mb-2">Product</span>
-              <Link href="/features" className="hover:text-primary transition-colors">Features</Link>
-              <Link href="/commands" className="hover:text-primary transition-colors">Commands</Link>
-              <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
-              <Link href="/explore" className="hover:text-primary transition-colors">Explore</Link>
+
+          <div className="flex gap-12 md:gap-16 font-mono text-[11px] uppercase">
+            <div className="flex flex-col gap-3">
+              <span className="text-primary font-bold text-[10px] mb-1">Product</span>
+              {["/features", "/commands", "/use-cases", "/explore", "/pricing"].map(href => (
+                <Link key={href} href={href} className="text-muted-foreground hover:text-white transition-colors capitalize">
+                  {href.slice(1).replace(/-/g, " ")}
+                </Link>
+              ))}
             </div>
-            <div className="flex flex-col gap-4">
-              <span className="text-primary font-bold mb-2">Resources</span>
-              <Link href="/use-cases" className="hover:text-primary transition-colors">Use Cases</Link>
-              <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>
-              <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-              <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <div className="flex flex-col gap-3">
+              <span className="text-primary font-bold text-[10px] mb-1">Company</span>
+              {["/about", "/faq", "/contact"].map(href => (
+                <Link key={href} href={href} className="text-muted-foreground hover:text-white transition-colors capitalize">
+                  {href.slice(1)}
+                </Link>
+              ))}
             </div>
-            <div className="flex flex-col gap-4">
-              <span className="text-primary font-bold mb-2">Legal</span>
-              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-              <a href="#" className="hover:text-primary transition-colors">Terms</a>
+            <div className="flex flex-col gap-3">
+              <span className="text-primary font-bold text-[10px] mb-1">Legal</span>
+              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(l => (
+                <a key={l} href="#" className="text-muted-foreground hover:text-white transition-colors">{l}</a>
+              ))}
             </div>
           </div>
         </div>
-        
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between font-mono text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Directioner. All rights reserved.</p>
-          <p className="mt-2 md:mt-0">Released under MIT License.</p>
+
+        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="font-mono text-[10px] text-muted-foreground">
+            © {new Date().getFullYear()} Directioner. All rights reserved.
+          </div>
+          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-1">
+            Payments by
+            <span className="text-primary font-bold ml-1">Razorpay</span>
+          </div>
         </div>
       </div>
     </footer>

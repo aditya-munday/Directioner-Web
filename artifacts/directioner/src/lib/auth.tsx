@@ -9,6 +9,7 @@ export type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  configured: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithOAuth: (provider: Provider) => Promise<void>;
   logout: () => Promise<void>;
@@ -19,15 +20,13 @@ export type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 async function fetchProfile(supabaseUser: SupabaseUser): Promise<User | null> {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', supabaseUser.id)
-      .single();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', supabaseUser.id)
+    .single();
 
-  // Profile row may not exist yet (first sign-in / delayed sync).
-  // Don't block auth — fall back to the Supabase user's metadata so the
-  // session is still treated as authenticated.
   if (error || !data) {
     return {
       id: supabaseUser.id,
@@ -50,27 +49,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const configured = supabase !== null && supabase !== undefined;
 
-  // Seed demo data for a new user
   const seedIfNeeded = useCallback(async (userId: string) => {
     if (!supabase) return;
-    // Non-fatal: seed function may not exist yet in some environments.
     try {
       await supabase.rpc('seed_demo_data', { p_user_id: userId });
     } catch {
-      // ignore
+      // Non-fatal — seed function may not exist in all environments
     }
   }, []);
 
-
   useEffect(() => {
-    // If Supabase is not configured, skip auth setup
     if (!supabase) {
       setLoading(false);
       return;
     }
 
-    // Get initial session
     supabase.auth.getSession().then(async ({ data: { session: s } }: { data: { session: Session | null } }) => {
       setSession(s);
       if (s?.user) {
@@ -80,16 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, s: Session | null) => {
       setSession(s);
       if (s?.user) {
         const profile = await fetchProfile(s.user);
         setUser(profile);
-        // Seed demo data on first sign-in
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
           await seedIfNeeded(s.user.id);
-          // Re-fetch profile after potential seed update
           const updated = await fetchProfile(s.user);
           setUser(updated);
         }
@@ -102,11 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [seedIfNeeded]);
 
   const login = async (email: string, password: string) => {
+    if (!supabase) throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
   };
 
   const loginWithOAuth = async (provider: Provider) => {
+    if (!supabase) throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.');
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -118,12 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
   };
 
   const register = async ({ username, email, password }: { username: string; email: string; password: string }) => {
+    if (!supabase) throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.');
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -133,8 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) throw new Error(error.message);
-
-    // If the user's session is null after sign-up, email verification is required
     const needsVerification = !data.session;
     if (needsVerification) {
       sessionStorage.setItem('pending_verification_email', email);
@@ -144,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return;
+    if (!supabase) throw new Error('Supabase is not configured.');
     const { error } = await supabase
       .from('profiles')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -153,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, login, loginWithOAuth, logout, register, updateProfile }}>
+    <AuthContext.Provider value={{ user, session, loading, configured, login, loginWithOAuth, logout, register, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

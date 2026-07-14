@@ -1,25 +1,29 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { Link } from "wouter";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { CountUpNumber } from "@/hooks/CountUpNumber";
-import { 
-  OscilloscopeWave, 
-  Typewriter, 
-  StaggeredGrid, 
-  BlueprintBackground, 
-  DrawOnPath,
-  FloatingParticles 
-} from "@/components/animations";
+import { OscilloscopeWave, Typewriter, StaggeredGrid } from "@/components/animations";
 import { SectionLabel } from "@/components/layout/SectionLabel";
+import { motion, useInView } from "framer-motion";
 import { ArrowRight, Mic, MessageSquare, Database, Sparkles } from "lucide-react";
 
-import heroBlueprintSrc from "@/assets/hero-blueprint.png";
-import memoryNodesSrc from "@/assets/memory-nodes.png";
-import developerSrc from "@/assets/developer.png";
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }),
+};
+
+function AnimSection({ children, className }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <motion.div ref={ref} initial="hidden" animate={inView ? "visible" : "hidden"} className={className}>
+      {children}
+    </motion.div>
+  );
+}
 
 export default function Home() {
   usePageTitle("Production-Grade AI for Discord");
-  const [selectedMode, setSelectedMode] = useState("/chat");
 
   const modes = [
     { cmd: "/chat", desc: "Default conversational AI" },
@@ -32,307 +36,374 @@ export default function Home() {
 
   return (
     <div className="overflow-hidden bg-background">
-      {/* HERO SECTION */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center px-6 pt-32 pb-16">
-        <FloatingParticles />
-        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-          <OscilloscopeWave color="hsl(var(--primary))" amplitude={60} frequency={3} speed={3} className="h-full scale-150" />
-        </div>
-        
-        <div className="relative z-10 max-w-5xl mx-auto w-full text-center md:text-left">
-          <div className="font-mono text-xs tracking-widest text-muted-foreground mb-8">
-            <Typewriter text="// DISCORD BOT ————————————————————— V1.0.0" />
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-display font-black leading-[0.9] mb-8">
-            <span className="text-primary block mb-2">Directioner.</span>
-            Production-grade<br/>AI for Discord.
-          </h1>
-          
-          <div className="font-mono text-sm border-l-2 border-primary pl-4 mb-12 py-1 max-w-2xl mx-auto md:mx-0 text-left">
-            <Typewriter speed={10} prefix="> " text="AVAILABLE FOR DISCORD SERVERS." />
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
-            <Link href="/register" className="bg-primary text-black font-mono font-bold px-8 py-4 uppercase text-sm corner-brackets hover:bg-white transition-colors inline-flex items-center justify-center gap-2">
-              ADD TO DISCORD ↗
-            </Link>
-            <Link href="/features" className="bg-transparent border border-border text-foreground hover:bg-white hover:text-black font-mono font-bold px-8 py-4 uppercase text-sm transition-colors inline-flex items-center justify-center">
-              EXPLORE FEATURES
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* STATS ROW */}
-      <div className="border-y border-border bg-card relative z-10">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
-          <div className="p-8 text-center md:text-left">
-            <div className="text-3xl md:text-4xl font-display font-black mb-2 text-white">
-              <CountUpNumber target={3000} suffix="+" />
-            </div>
-            <div className="font-mono text-xs text-muted-foreground uppercase">SERVERS</div>
+      {/* ═══ HERO — yellow background, motion.dev layout ═══ */}
+      <section className="relative bg-primary text-black overflow-hidden">
+        {/* Top meta bar */}
+        <div className="flex items-center justify-between px-6 pt-20 pb-4 max-w-7xl mx-auto w-full border-b border-black/10">
+          <div className="font-mono text-[11px] leading-5 font-medium">
+            <div>// DISCORD BOT</div>
+            <div>// AI POWERED</div>
           </div>
-          <div className="p-8 text-center md:text-left">
-            <div className="text-3xl md:text-4xl font-display font-black mb-2 text-white">
-              <CountUpNumber target={1200000} />
-            </div>
-            <div className="font-mono text-xs text-muted-foreground uppercase">MESSAGES PROCESSED</div>
-          </div>
-          <div className="p-8 text-center md:text-left">
-            <div className="text-3xl md:text-4xl font-display font-black mb-2 text-white">
-              99.9%
-            </div>
-            <div className="font-mono text-xs text-muted-foreground uppercase">UPTIME</div>
-          </div>
-          <div className="p-8 text-center md:text-left">
-            <div className="text-3xl md:text-4xl font-display font-black mb-2 text-white">
-              <CountUpNumber target={200} prefix="<" suffix="ms" />
-            </div>
-            <div className="font-mono text-xs text-muted-foreground uppercase">LATENCY</div>
-          </div>
+          <div className="font-mono text-[11px]">V1.0.0</div>
         </div>
-      </div>
 
-      {/* TICKER */}
-      <div className="border-b border-border bg-black py-3 overflow-hidden flex">
-        <div className="flex whitespace-nowrap animate-ticker font-mono text-xs text-primary uppercase font-bold tracking-widest gap-8">
-          <span>VOICE AI · MEMORY SYSTEM · MULTI-MODE · CODE ASSISTANT · 99.9% UPTIME · &lt;200ms LATENCY · MIT LICENSE · </span>
-          <span>VOICE AI · MEMORY SYSTEM · MULTI-MODE · CODE ASSISTANT · 99.9% UPTIME · &lt;200ms LATENCY · MIT LICENSE · </span>
-          <span>VOICE AI · MEMORY SYSTEM · MULTI-MODE · CODE ASSISTANT · 99.9% UPTIME · &lt;200ms LATENCY · MIT LICENSE · </span>
-          <span>VOICE AI · MEMORY SYSTEM · MULTI-MODE · CODE ASSISTANT · 99.9% UPTIME · &lt;200ms LATENCY · MIT LICENSE · </span>
-        </div>
-      </div>
+        {/* Main hero grid */}
+        <div className="max-w-7xl mx-auto px-6 pb-0 grid grid-cols-1 lg:grid-cols-2 gap-0 items-start">
+          {/* Left — headline + CTA */}
+          <div className="py-10 lg:py-12 pr-0 lg:pr-12">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="font-display font-bold text-black leading-[0.9] mb-8"
+              style={{ fontSize: "clamp(52px, 8vw, 96px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}
+            >
+              Directioner.<br />
+              <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>
+                Production-grade<br />AI for Discord.
+              </span>
+            </motion.h1>
 
-      {/* [01] CORE FEATURES */}
-      <section className="py-32 px-6 max-w-7xl mx-auto">
-        <SectionLabel number="01" name="CORE FEATURES" />
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { icon: Mic, title: "Voice AI", desc: "Native voice channel integration with sub-second latency." },
-              { icon: MessageSquare, title: "Text Intelligence", desc: "Context-aware responses across multiple channels." },
-              { icon: Database, title: "Persistent Memory", desc: "Vector-based memory nodes for long-term recall." },
-              { icon: Sparkles, title: "Multi-Mode", desc: "Switch personas instantly from tutor to chaos." }
-            ].map((f, i) => (
-              <div key={i} className="p-6 border border-border bg-card hover:border-primary/50 transition-colors">
-                <f.icon className="text-primary mb-4" size={24} />
-                <h4 className="font-mono text-sm font-bold uppercase mb-2 text-white">{f.title}</h4>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-          
-          <BlueprintBackground className="aspect-square flex items-center justify-center relative border border-border">
-            <img src={heroBlueprintSrc} alt="Architecture" className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity" />
-            <div className="absolute top-4 right-4 font-mono text-xs text-primary bg-black/80 px-2 py-1 border border-primary/30">FIG.01 // ARCHITECTURE</div>
-            
-            <div className="relative z-10 w-full max-w-sm border border-primary/30 p-6 bg-black/90 backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-white">DISCORD GATEWAY</span>
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              </div>
-              <div className="space-y-4 font-mono text-xs text-muted-foreground">
-                <div className="flex justify-between items-center p-2 border border-white/5 bg-white/5"><span>Event Ingestion</span> <span className="text-primary">OK</span></div>
-                <div className="flex justify-between items-center p-2 border border-white/5 bg-white/5"><span>Context Assembly</span> <span className="text-primary">OK</span></div>
-                <div className="flex justify-between items-center p-2 border border-white/5 bg-white/5"><span>LLM Inference</span> <span className="text-primary">OK</span></div>
-                <div className="flex justify-between items-center p-2 border border-white/5 bg-white/5"><span>Action Dispatch</span> <span className="text-primary">OK</span></div>
-              </div>
-            </div>
-          </BlueprintBackground>
-        </div>
-      </section>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="font-mono text-[11px] mb-10 flex items-center gap-3 flex-wrap"
+            >
+              <span className="font-bold">&gt;</span>
+              <span className="font-bold uppercase">AVAILABLE FOR DISCORD SERVERS.</span>
+            </motion.div>
 
-      {/* [02] MEMORY SYSTEM */}
-      <section className="py-32 px-6 border-t border-border bg-card">
-        <div className="max-w-7xl mx-auto">
-          <SectionLabel number="02" name="MEMORY SYSTEM" />
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <BlueprintBackground className="aspect-square relative border border-border order-2 lg:order-1">
-              <img src={memoryNodesSrc} alt="Memory Nodes" className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity" />
-              <div className="absolute top-4 left-4 font-mono text-xs text-primary bg-black/80 px-2 py-1 border border-primary/30">FIG.02 // VECTOR_DB</div>
-              
-              <DrawOnPath className="absolute inset-0 flex items-center justify-center z-10">
-                <svg viewBox="0 0 100 100" className="w-full h-full text-primary opacity-50 p-12">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-                  <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1" />
-                  <path d="M50 10 L50 30 M50 70 L50 90 M10 50 L30 50 M70 50 L90 50" stroke="currentColor" strokeWidth="1" />
-                  <circle cx="50" cy="50" r="4" fill="currentColor" />
-                  <circle cx="50" cy="10" r="2" fill="currentColor" />
-                  <circle cx="50" cy="90" r="2" fill="currentColor" />
-                  <circle cx="10" cy="50" r="2" fill="currentColor" />
-                  <circle cx="90" cy="50" r="2" fill="currentColor" />
-                </svg>
-              </DrawOnPath>
-            </BlueprintBackground>
-            
-            <div className="space-y-6 order-1 lg:order-2">
-              <h2 className="text-4xl md:text-5xl font-display font-bold text-white">Remember everything.<br/>Forget nothing.</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">Directioner builds a vector-based graph of your community over time. It learns who people are, what they care about, and references past conversations naturally.</p>
-              <p className="text-muted-foreground text-lg leading-relaxed">Most bots suffer from amnesia after 50 messages. We utilize semantic search to recall relevant context from months ago, injecting it directly into the current prompt.</p>
-              <p className="text-muted-foreground text-lg leading-relaxed">You have full control over what is stored, with commands to selectively forget or wipe context entirely.</p>
-              
-              <ul className="space-y-4 pt-6">
-                {[
-                  "Cross-session memory recall",
-                  "Per-user preference mapping",
-                  "Automated thread summarization"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 font-mono text-sm text-white">
-                    <span className="text-accent">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* [03] INTERACTION MODES */}
-      <section className="py-32 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto">
-          <SectionLabel number="03" name="INTERACTION MODES" />
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-16 text-center max-w-2xl mx-auto">Change personality at the speed of thought.</h2>
-          
-          <StaggeredGrid className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
-            {modes.map((mode) => (
-              <div 
-                key={mode.cmd}
-                onMouseEnter={() => setSelectedMode(mode.cmd)}
-                className={`p-6 border bg-card cursor-pointer transition-all duration-300 transform hover:-translate-y-1 ${
-                  selectedMode === mode.cmd 
-                    ? "border-primary shadow-[0_0_15px_rgba(255,229,0,0.1)]" 
-                    : "border-border hover:border-primary/50"
-                }`}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <Link
+                href="/register"
+                className="corner-brackets bg-black text-primary font-mono font-bold px-8 py-4 uppercase text-sm hover:bg-black/80 transition-colors inline-flex items-center justify-center gap-2"
               >
-                <div className="font-mono text-lg font-bold text-primary mb-2">{mode.cmd}</div>
-                <div className="text-sm text-muted-foreground">{mode.desc}</div>
+                ADD TO DISCORD ↗
+              </Link>
+              <Link
+                href="/features"
+                className="border-2 border-black text-black font-mono font-bold px-8 py-4 uppercase text-sm hover:bg-black hover:text-primary transition-colors inline-flex items-center justify-center gap-2"
+              >
+                EXPLORE FEATURES
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Right — oscilloscope wave + dot grid */}
+          <div className="relative h-64 lg:h-full min-h-[280px] flex items-center justify-center overflow-hidden dot-grid-yellow border-l border-black/10">
+            <svg
+              viewBox="0 0 560 220"
+              className="absolute inset-0 w-full h-full"
+              preserveAspectRatio="xMidYMid meet"
+              aria-hidden
+            >
+              {/* Waveform paths — motion.dev style */}
+              <path
+                d="M0 110 C70 110 70 40 140 40 C210 40 210 180 280 180 C350 180 350 70 420 70 C490 70 490 140 560 140"
+                fill="none" stroke="black" strokeWidth="2" strokeDasharray="5 3" opacity="0.4"
+              />
+              <path
+                d="M0 110 C70 110 70 60 140 60 C210 60 210 160 280 160 C350 160 350 80 420 80 C490 80 490 130 560 130"
+                fill="none" stroke="black" strokeWidth="2.5" opacity="0.9"
+              />
+              <path
+                d="M0 110 C80 110 80 50 160 50 C240 50 240 170 320 170 C400 170 400 60 480 60 C520 60 540 90 560 110"
+                fill="none" stroke="black" strokeWidth="1.5" opacity="0.3"
+              />
+              {/* Dots on wave */}
+              <circle cx="140" cy="40" r="4" fill="black" opacity="0.7" />
+              <circle cx="280" cy="180" r="4" fill="black" opacity="0.7" />
+              <circle cx="420" cy="70" r="4" fill="black" opacity="0.7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Feature pills row — motion.dev style */}
+        <div className="border-t border-black/10">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y sm:divide-y-0 lg:divide-x divide-black/10">
+            {[
+              { n: "01", title: "FREE TIER", desc: "Completely free to use, forever on basic plan." },
+              { n: "02", title: "PRODUCTION READY", desc: "Trusted by thousands of Discord servers." },
+              { n: "03", title: "MEMORY ENGINE", desc: "Long-term vector memory recall per user." },
+              { n: "04", title: "BUILT FOR AI", desc: "GPT-4o, voice, code — all in one bot." },
+              { n: "05", title: "ANY SERVER", desc: "Gaming, study, dev — modes for all." },
+            ].map((f) => (
+              <div key={f.n} className="p-6">
+                <div className="font-mono text-[10px] text-black/40 mb-2">{f.n}</div>
+                <div className="font-mono text-xs font-bold text-black uppercase mb-1">{f.title}</div>
+                <div className="font-mono text-[11px] text-black/60 leading-relaxed">{f.desc}</div>
               </div>
             ))}
-          </StaggeredGrid>
+          </div>
+        </div>
 
-          <BlueprintBackground className="max-w-3xl mx-auto border border-border p-8 text-center">
-            <div className="font-mono text-sm text-primary mb-2">FIG.03 // TERMINAL</div>
-            <div className="text-2xl md:text-3xl font-mono text-white">
-              <Typewriter key={selectedMode} text={`> /chatmode ${selectedMode.replace('/', '')}`} speed={30} />
+        {/* Bottom slash separator — motion.dev style */}
+        <div className="flex items-center px-6 py-3 border-t border-black/10 overflow-hidden">
+          <span className="font-mono text-black/30 text-xs mr-4">+</span>
+          <div className="flex-1 overflow-hidden">
+            <div className="font-mono text-xs text-black/20 whitespace-nowrap animate-ticker inline-block">
+              {"//".repeat(120)}
             </div>
-          </BlueprintBackground>
+          </div>
+          <span className="font-mono text-black/30 text-xs ml-4">+</span>
         </div>
       </section>
 
-      {/* [04] PRICING PREVIEW */}
-      <section className="py-32 px-6 border-t border-border bg-card">
+      {/* ═══ STATS ROW ═══ */}
+      <div className="border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
+          {[
+            { label: "SERVERS", target: 3000, suffix: "+" },
+            { label: "MESSAGES PROCESSED", target: 1200000 },
+            { label: "UPTIME", target: 99, suffix: ".9%" },
+            { label: "AI MODES", target: 6, suffix: "" },
+          ].map((s, i) => (
+            <motion.div
+              key={i}
+              custom={i}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="p-8"
+            >
+              <div className="font-mono text-[10px] text-muted-foreground uppercase mb-2">{s.label}</div>
+              <div className="font-display font-bold text-3xl md:text-4xl text-white" style={{ fontVariationSettings: '"opsz" 48, "wght" 720' }}>
+                <CountUpNumber target={s.target} suffix={s.suffix ?? ""} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ SECTION 01 — ANIMATION LIBRARY style ═══ */}
+      <section className="py-24 px-6 border-b border-border">
         <div className="max-w-7xl mx-auto">
-          <SectionLabel number="04" name="PRICING" />
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {[
-              { name: "Free", price: "0", features: ["500 credits/mo", "Text only", "50 Memory nodes"] },
-              { name: "Basic", price: "4.99", features: ["5,000 credits/mo", "Voice (60min/day)", "500 Memory nodes"] },
-              { name: "Pro", price: "14.99", popular: true, features: ["25,000 credits/mo", "Unlimited Voice", "5,000 Memory nodes"] },
-              { name: "Max", price: "39.99", features: ["Unlimited credits", "API Access", "White-label"] }
-            ].map((t) => (
-              <div key={t.name} className={`relative flex flex-col bg-background border ${t.popular ? 'border-primary' : 'border-border'} p-8 hover:-translate-y-2 transition-transform duration-300`}>
-                {t.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-black font-mono text-[10px] font-bold px-3 py-1 uppercase border border-black">
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="font-display text-xl font-bold uppercase mb-2 text-white">{t.name}</h3>
-                <div className="mb-6">
-                  <span className="text-3xl font-display font-black text-white">${t.price}</span>
-                  <span className="text-muted-foreground font-mono text-xs">/mo</span>
-                </div>
-                <ul className="space-y-3 mb-8 flex-1">
-                  {t.features.map(f => (
-                    <li key={f} className="text-sm text-muted-foreground flex items-center gap-2 before:content-['✓'] before:text-accent before:font-mono">{f}</li>
+          <AnimSection>
+            <SectionLabel number="01" label="AI ENGINE" />
+            <motion.h2
+              variants={fadeUp}
+              className="font-display font-bold text-white mb-6 mt-4"
+              style={{ fontSize: "clamp(36px, 5.4vw, 64px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}
+            >
+              Intelligence<br />
+              <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>that scales.</span>
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={1} className="font-mono text-sm text-muted-foreground max-w-xl leading-relaxed mb-16">
+              Directioner uses GPT-4o under the hood, with a custom memory layer that makes every response smarter over time. The more your community uses it, the better it gets.
+            </motion.p>
+          </AnimSection>
+
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
+            {/* AI mode selector */}
+            <AnimSection>
+              <motion.div variants={fadeUp} className="bg-card border border-border p-8">
+                <div className="font-mono text-[10px] text-muted-foreground uppercase mb-6">// AI MODES — SELECT ONE</div>
+                <div className="space-y-2">
+                  {modes.map((m, i) => (
+                    <motion.div
+                      key={m.cmd}
+                      variants={fadeUp}
+                      custom={i * 0.5}
+                      className="flex items-center justify-between p-4 border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group"
+                    >
+                      <span className="font-mono text-sm font-bold text-primary group-hover:text-primary">{m.cmd}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{m.desc}</span>
+                      <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    </motion.div>
                   ))}
-                </ul>
-                <Link href="/pricing" className={`w-full text-center font-mono text-xs font-bold uppercase py-3 transition-colors ${
-                  t.popular ? "bg-primary text-black corner-brackets hover:bg-white" : "border border-border text-white hover:bg-white hover:text-black"
-                }`}>
-                  Select Plan
-                </Link>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <Link href="/pricing" className="font-mono text-sm text-primary uppercase hover:underline">
-              VIEW ALL FEATURES →
-            </Link>
+                </div>
+              </motion.div>
+            </AnimSection>
+
+            {/* Stats right side */}
+            <AnimSection className="space-y-6">
+              {[
+                { icon: MessageSquare, label: "Text Messages", value: "∞", sub: "Unlimited on Pro & Max" },
+                { icon: Mic, label: "Voice Latency", value: "<200ms", sub: "Ultra-low audio latency" },
+                { icon: Database, label: "Memory Nodes", value: "5,000", sub: "Long-term vector storage" },
+                { icon: Sparkles, label: "Languages", value: "20+", sub: "Multilingual support" },
+              ].map((s, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  custom={i * 0.5}
+                  className="flex items-center gap-6 bg-card border border-border p-6 group hover:border-primary/30 transition-colors"
+                >
+                  <s.icon size={24} className="text-primary shrink-0" />
+                  <div className="flex-1">
+                    <div className="font-mono text-[10px] text-muted-foreground uppercase">{s.label}</div>
+                    <div className="font-display font-bold text-2xl text-white" style={{ fontVariationSettings: '"opsz" 36, "wght" 700' }}>{s.value}</div>
+                  </div>
+                  <div className="font-mono text-[10px] text-muted-foreground text-right max-w-[120px]">{s.sub}</div>
+                </motion.div>
+              ))}
+            </AnimSection>
           </div>
         </div>
       </section>
 
-      {/* [05] HOW IT WORKS */}
-      <section className="py-32 px-6 border-t border-border">
+      {/* ═══ SECTION 02 — MEMORY ═══ */}
+      <section className="py-24 px-6 border-b border-border bg-card">
         <div className="max-w-7xl mx-auto">
-          <SectionLabel number="05" name="HOW IT WORKS" />
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-16">Zero friction deployment.</h2>
-          
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* DrawOnPath Connectors (desktop only) */}
-            <div className="hidden md:block absolute top-1/2 left-1/6 right-1/6 h-[2px] -translate-y-1/2 z-0">
-              <DrawOnPath className="w-full h-full">
-                <svg className="w-full h-full" preserveAspectRatio="none">
-                  <line x1="0" y1="0" x2="100%" y2="0" stroke="var(--color-primary)" strokeWidth="2" strokeDasharray="4 4" opacity="0.3" />
-                </svg>
-              </DrawOnPath>
-            </div>
-
-            {[
-              { num: "01", title: "Add Bot", desc: "Authorize Directioner in your server with one click." },
-              { num: "02", title: "Configure", desc: "Use the dashboard or /setup to adjust personality and channels." },
-              { num: "03", title: "Start Chatting", desc: "Mention the bot or use slash commands to begin." }
-            ].map((step, i) => (
-              <div key={i} className="bg-blueprint border border-white/10 p-8 relative z-10">
-                <div className="text-5xl font-display font-black text-primary/20 absolute top-4 right-4">{step.num}</div>
-                <div className="font-mono text-2xl font-bold text-primary mb-4">{step.num}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-sm text-blueprint-foreground opacity-80">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* [06] THE CREATOR */}
-      <section className="py-32 px-6 border-t border-border bg-card">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-5 gap-12 items-center">
-            <div className="md:col-span-2">
-              <div className="aspect-square w-full max-w-sm mx-auto border border-primary p-2 relative">
-                <div className="absolute -top-3 -left-3 corner-brackets text-primary w-full h-full" />
-                <img src={developerSrc} alt="Aditya Munday" className="w-full h-full object-cover grayscale contrast-125" />
-                <div className="absolute bottom-4 right-4 font-mono text-[10px] bg-black/80 text-primary px-2 py-1">FIG.06</div>
-              </div>
-            </div>
-            
-            <div className="md:col-span-3 space-y-6">
-              <SectionLabel number="06" name="THE CREATOR" />
-              <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase">Built by<br/><span className="text-primary">Aditya Munday</span></h2>
-              <div className="font-mono text-xs text-muted-foreground uppercase">// FOUNDER & LEAD ENGINEER</div>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Directioner was built out of necessity. After moderating massive communities and wrestling with generic, amnesiac chatbots, I needed a tool that felt alive. Something that could handle code reviews, host trivia, and remember inside jokes—all with zero latency.
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4">
-                {["TypeScript", "Discord.js", "OpenAI", "Vector DB"].map(t => (
-                  <span key={t} className="px-3 py-1 border border-border font-mono text-[10px] uppercase text-white bg-background">
-                    {t}
-                  </span>
+          <SectionLabel number="02" label="MEMORY SYSTEM" />
+          <div className="grid lg:grid-cols-2 gap-16 items-center mt-8">
+            <AnimSection>
+              <motion.h2
+                variants={fadeUp}
+                className="font-display font-bold text-white mb-6"
+                style={{ fontSize: "clamp(36px, 5vw, 56px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}
+              >
+                Remembers<br />
+                <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>everything.</span>
+              </motion.h2>
+              <motion.p variants={fadeUp} custom={1} className="font-mono text-sm text-muted-foreground leading-relaxed mb-8">
+                Directioner builds a persistent memory graph of every user interaction. It remembers preferences, facts, and past conversations — making each response uniquely personal.
+              </motion.p>
+              <motion.div variants={fadeUp} custom={2} className="space-y-3">
+                {[
+                  "Vector database storage — cross-session recall",
+                  "Per-user preference learning",
+                  "Server-scoped and global memory nodes",
+                  "Semantic search over memory graph",
+                ].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 font-mono text-xs text-white">
+                    <span className="w-5 h-5 border border-primary flex items-center justify-center text-primary text-[10px] font-bold shrink-0">✓</span>
+                    {f}
+                  </div>
                 ))}
-              </div>
-            </div>
+              </motion.div>
+            </AnimSection>
+
+            {/* Memory node visualization */}
+            <AnimSection>
+              <motion.div variants={fadeUp} className="border border-border bg-background p-8 font-mono text-xs relative overflow-hidden">
+                <div className="text-muted-foreground mb-4">// MEMORY NODE EXAMPLE</div>
+                <div className="space-y-3">
+                  {[
+                    { scope: "USER", content: "@GamingKing prefers FPS strategy tips", time: "2h ago" },
+                    { scope: "SERVER", content: "Weekly tournament every Friday at 8PM UTC", time: "1d ago" },
+                    { scope: "GLOBAL", content: "CS community focuses on TypeScript + React", time: "3d ago" },
+                    { scope: "USER", content: "@StudyHero prefers step-by-step explanations", time: "5d ago" },
+                  ].map((node, i) => (
+                    <motion.div key={i} variants={fadeUp} custom={i * 0.3} className="flex items-start gap-3 p-3 border border-border/50 hover:border-primary/30 transition-colors">
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 shrink-0 ${
+                        node.scope === 'USER' ? 'bg-primary text-black' :
+                        node.scope === 'SERVER' ? 'bg-accent text-black' :
+                        'bg-white/10 text-white'
+                      }`}>{node.scope}</span>
+                      <span className="flex-1 text-white leading-relaxed">{node.content}</span>
+                      <span className="text-muted-foreground text-[10px] shrink-0">{node.time}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+              </motion.div>
+            </AnimSection>
           </div>
         </div>
       </section>
 
-      {/* [07] TESTIMONIALS */}
-      <section className="py-32 px-6 border-t border-border">
+      {/* ═══ SECTION 03 — VOICE ═══ */}
+      <section className="py-24 px-6 border-b border-border">
         <div className="max-w-7xl mx-auto">
-          <SectionLabel number="07" name="TESTIMONIALS" />
-          
+          <SectionLabel number="03" label="VOICE ENGINE" />
+          <div className="grid lg:grid-cols-2 gap-16 items-center mt-8">
+            {/* Waveform visual */}
+            <AnimSection>
+              <motion.div variants={fadeUp} className="bg-card border border-border p-8 relative overflow-hidden h-64 flex items-center justify-center">
+                <OscilloscopeWave color="hsl(var(--primary))" amplitude={50} frequency={3} speed={2} className="absolute inset-0" />
+                <div className="relative z-10 text-center">
+                  <div className="font-mono text-[10px] text-muted-foreground uppercase mb-2">LIVE AUDIO STREAM</div>
+                  <div className="font-display font-bold text-5xl text-primary" style={{ fontVariationSettings: '"opsz" 60, "wght" 720' }}>&lt;200ms</div>
+                  <div className="font-mono text-xs text-muted-foreground mt-2">LATENCY</div>
+                </div>
+              </motion.div>
+            </AnimSection>
+
+            <AnimSection>
+              <motion.h2
+                variants={fadeUp}
+                className="font-display font-bold text-white mb-6"
+                style={{ fontSize: "clamp(36px, 5vw, 56px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}
+              >
+                Speak.<br />
+                <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>It listens.</span>
+              </motion.h2>
+              <motion.p variants={fadeUp} custom={1} className="font-mono text-sm text-muted-foreground leading-relaxed mb-8">
+                Real-time voice responses in any Discord voice channel. Ultra-low latency, multi-speaker recognition, and automatic join/leave — it just works.
+              </motion.p>
+              <motion.div variants={fadeUp} custom={2} className="grid grid-cols-2 gap-4">
+                {[
+                  ["&lt;200ms", "Audio latency"],
+                  ["Multi-speaker", "Recognition"],
+                  ["Noise cancel", "Built-in"],
+                  ["Auto join", "Voice channels"],
+                ].map(([val, label], i) => (
+                  <div key={i} className="border border-border p-4">
+                    <div className="font-display font-bold text-xl text-primary mb-1" style={{ fontVariationSettings: '"opsz" 36, "wght" 700' }} dangerouslySetInnerHTML={{ __html: val }} />
+                    <div className="font-mono text-[10px] text-muted-foreground uppercase">{label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </AnimSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 04 — AI MODES SHOWCASE ═══ */}
+      <section className="py-24 px-6 border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto">
+          <SectionLabel number="04" label="AI MODES" />
+          <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { cmd: "/chat", desc: "Default conversational AI. Natural, helpful, context-aware.", color: "primary" },
+              { cmd: "/tutor", desc: "Patient, educational mode. Adapts to any subject or skill level.", color: "accent" },
+              { cmd: "/coder", desc: "Development-focused. Code review, debugging, 15+ languages.", color: "primary" },
+              { cmd: "/chaos", desc: "Unpredictable, hilarious, always entertaining. For fun servers.", color: "accent" },
+              { cmd: "/creative", desc: "Storytelling, brainstorming, script writing, world-building.", color: "primary" },
+              { cmd: "/debate", desc: "Devil's advocate mode. Challenges assumptions, sparks discussion.", color: "accent" },
+            ].map((m, i) => (
+              <motion.div
+                key={m.cmd}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="border border-border bg-background p-8 group hover:border-primary/50 transition-all"
+              >
+                <div className={`font-mono text-sm font-bold mb-3 ${m.color === 'primary' ? 'text-primary' : 'text-accent'}`}>{m.cmd}</div>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 05 — TESTIMONIALS ═══ */}
+      <section className="py-24 px-6 border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <SectionLabel number="05" label="COMMUNITY" />
+          <motion.h2
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="font-display font-bold text-white mb-16 mt-4"
+            style={{ fontSize: "clamp(36px, 5vw, 56px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}
+          >
+            Loved by<br />
+            <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>thousands.</span>
+          </motion.h2>
+
           <StaggeredGrid className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
             {[
               { q: "Directioner coordinates our raids so we don't have to.", u: "@GamingKing_X", s: "Gaming Hub" },
@@ -343,41 +414,71 @@ export default function Home() {
               { q: "New member retention went from 30% to 70%.", u: "@CommunityMgr", s: "Creator Space" }
             ].map((t, i) => (
               <div key={i} className="bg-card border border-border p-8 hover:border-primary/30 transition-colors relative">
-                <div className="text-4xl font-display font-black text-primary/20 absolute top-4 left-6">"</div>
-                <p className="font-mono text-sm leading-relaxed text-white relative z-10 mb-6 mt-4">
-                  {t.q}
+                <div className="font-mono text-[10px] text-muted-foreground uppercase mb-4">// REVIEW</div>
+                <p className="font-mono text-sm leading-relaxed text-white mb-6">
+                  "{t.q}"
                 </p>
                 <div className="flex justify-between items-end">
-                  <div className="font-bold text-sm text-primary">{t.u}</div>
+                  <div className="font-bold text-sm text-primary font-mono">{t.u}</div>
                   <div className="font-mono text-[10px] text-muted-foreground uppercase">{t.s}</div>
                 </div>
               </div>
             ))}
           </StaggeredGrid>
 
-          {/* Trust Bar */}
-          <div className="text-center border-t border-border pt-16">
-            <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-8">
-              TRUSTED BY COMMUNITIES ON
+          {/* Ticker trust bar */}
+          <div className="border border-border overflow-hidden">
+            <div className="flex items-center py-6 px-6 border-b border-border">
+              <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest whitespace-nowrap">
+                TRUSTED BY COMMUNITIES ON
+              </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-16 font-mono font-bold text-xl md:text-2xl text-white/30 uppercase">
-              <span>DISCORD</span>
-              <span>GITHUB</span>
-              <span>OPENAI</span>
-              <span>LINEAR</span>
-              <span>FIGMA</span>
+            <div className="flex overflow-hidden py-6">
+              <div className="flex gap-16 animate-ticker whitespace-nowrap font-mono font-bold text-2xl text-white/20 uppercase">
+                {["DISCORD", "GITHUB", "OPENAI", "LINEAR", "FIGMA", "DISCORD", "GITHUB", "OPENAI", "LINEAR", "FIGMA"].map((s, i) => (
+                  <span key={i}>{s}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-32 px-6 border-t border-border hatch-pattern relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center relative z-10 bg-background/80 p-16 border border-border backdrop-blur-sm">
-          <h2 className="text-5xl md:text-7xl font-display font-black mb-8 uppercase text-white">Wake up your server.</h2>
-          <Link href="/register" className="bg-primary text-black font-mono font-bold px-12 py-6 uppercase text-lg corner-brackets hover:bg-white transition-colors inline-block">
-            ADD TO DISCORD ↗
-          </Link>
+      {/* ═══ CTA SECTION ═══ */}
+      <section className="relative bg-primary overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 items-center gap-12">
+          <div>
+            <div className="font-mono text-[10px] text-black/50 uppercase mb-4">// GET STARTED TODAY</div>
+            <h2 className="font-display font-bold text-black mb-6" style={{ fontSize: "clamp(40px, 6vw, 72px)", fontVariationSettings: '"opsz" 60, "wght" 720' }}>
+              Wake up<br />
+              <span style={{ fontVariationSettings: '"opsz" 60, "wght" 460' }}>your server.</span>
+            </h2>
+            <div className="flex gap-4 flex-wrap">
+              <Link
+                href="/register"
+                className="corner-brackets bg-black text-primary font-mono font-bold px-8 py-4 uppercase text-sm hover:bg-black/80 transition-colors inline-flex items-center gap-2"
+              >
+                ADD TO DISCORD ↗
+              </Link>
+              <Link
+                href="/pricing"
+                className="border-2 border-black text-black font-mono font-bold px-8 py-4 uppercase text-sm hover:bg-black hover:text-primary transition-colors inline-flex items-center gap-2"
+              >
+                VIEW PRICING
+              </Link>
+            </div>
+          </div>
+          <div className="hidden lg:block relative h-48 dot-grid-yellow border border-black/10" />
+        </div>
+        {/* Bottom slash separator */}
+        <div className="flex items-center px-6 py-3 border-t border-black/10 overflow-hidden">
+          <span className="font-mono text-black/30 text-xs mr-4">+</span>
+          <div className="flex-1 overflow-hidden">
+            <div className="font-mono text-xs text-black/20 whitespace-nowrap animate-ticker inline-block">
+              {"//".repeat(120)}
+            </div>
+          </div>
+          <span className="font-mono text-black/30 text-xs ml-4">+</span>
         </div>
       </section>
     </div>
