@@ -3,6 +3,8 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { motion } from "framer-motion";
 import { Mail, MessageSquare, Github, Twitter, Send } from "lucide-react";
 import { PageHero, Reveal, DrawLine, Input, PrimaryBtn } from "@/components/ui/motion-primitives";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { BorderBeam } from "@/components/animations/BorderBeam";
 
 const channels = [
   { icon: MessageSquare, label: "Discord Support Server", desc: "Fastest response — live community + team", action: "Join Discord", href: "https://discord.com/invite/directioner", color: "#5865F2" },

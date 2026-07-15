@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { PageHero, Reveal, DrawLine } from "@/components/ui/motion-primitives";
+import { ClipReveal } from "@/components/animations/ClipReveal";
+import { TextScramble } from "@/components/animations/TextScramble";
 
 type FAQ = { q: string; a: string };
 

@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { PageHero, Reveal, DrawLine, SplitReveal } from "@/components/ui/motion-primitives";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { TextScramble } from "@/components/animations/TextScramble";
+import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const tiers = [
   {
@@ -137,11 +141,19 @@ export default function Pricing() {
           />
         </button>
         <span className="font-mono text-xs uppercase tracking-wide" style={{ color: yearly ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)" }}>Yearly</span>
-        {yearly && (
-          <span className="font-mono text-[9px] px-2 py-1 uppercase tracking-wide" style={{ background: "rgba(255,229,0,0.1)", color: "#FFE500", border: "1px solid rgba(255,229,0,0.2)" }}>
-            Save 20%
-          </span>
-        )}
+        <AnimatePresence>
+          {yearly && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8, x: -8 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.8, x: -8 }}
+              className="font-mono text-[9px] px-2 py-1 uppercase tracking-wide"
+              style={{ background: "rgba(255,229,0,0.1)", color: "#FFE500", border: "1px solid rgba(255,229,0,0.2)" }}
+            >
+              Save 20%
+            </motion.span>
+          )}
+        </AnimatePresence>
       </Reveal>
 
       {/* Tier cards */}
@@ -149,64 +161,110 @@ export default function Pricing() {
         {tiers.map((tier, i) => (
           <motion.div
             key={tier.id}
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.55, delay: i * 0.09, ease: [0.16, 1, 0.3, 1] }}
-            className="relative rounded-xl overflow-hidden flex flex-col"
-            style={{
-              background: tier.highlight ? "rgba(255,229,0,0.04)" : "#0f0f12",
-              border: tier.highlight ? "1px solid rgba(255,229,0,0.3)" : "1px solid rgba(255,255,255,0.06)",
-            }}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            {tier.highlight && (
-              <div className="absolute top-0 inset-x-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #FFE500, transparent)" }} />
-            )}
-            <div className="p-8 flex-1">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] mb-2" style={{ color: tier.color }}>{tier.name}</div>
-              <div className="font-mono text-xs mb-6" style={{ color: "rgba(255,255,255,0.35)" }}>{tier.tagline}</div>
-              <div className="mb-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={yearly ? "y" : "m"}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex items-baseline gap-1"
-                  >
-                    <span className="font-display font-bold text-white" style={{ fontSize: 48, lineHeight: 1 }}>
-                      ${yearly ? tier.price.yearly : tier.price.monthly}
-                    </span>
-                    {tier.price.monthly > 0 && (
-                      <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>/mo</span>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {tier.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
-                      style={{ background: `${tier.color}18`, border: `1px solid ${tier.color}35` }}>
-                      <Check size={10} style={{ color: tier.color }} />
-                    </div>
-                    <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-6 pt-0">
-              <Link
-                href={tier.href}
-                className="block w-full text-center font-mono font-bold text-sm uppercase tracking-wide px-5 py-3.5 transition-all"
-                style={tier.highlight
-                  ? { background: "#FFE500", color: "#000" }
-                  : { border: `1px solid ${tier.color}40`, color: tier.color }}
+            <TiltCard
+              intensity={5}
+              glowColor={`${tier.color}08`}
+              className="relative rounded-xl overflow-hidden flex flex-col h-full"
+            >
+              <div
+                className="relative rounded-xl overflow-hidden flex flex-col h-full"
+                style={{
+                  background: tier.highlight ? "rgba(255,229,0,0.04)" : "#0f0f12",
+                  border: tier.highlight
+                    ? "1px solid rgba(255,229,0,0.3)"
+                    : "1px solid rgba(255,255,255,0.06)",
+                }}
               >
-                {tier.cta}
-              </Link>
-            </div>
+                {tier.highlight && (
+                  <div
+                    className="absolute top-0 inset-x-0 h-px"
+                    style={{ background: "linear-gradient(90deg, transparent, #FFE500, transparent)" }}
+                  />
+                )}
+
+                {/* Border beam on highlighted card */}
+                {tier.highlight && <BorderBeam color="#FFE500" duration={4} />}
+
+                <div className="p-8 flex-1">
+                  <TextScramble
+                    text={tier.name}
+                    className="font-mono text-[10px] uppercase tracking-[0.22em] mb-2 block"
+                    delay={i * 0.15}
+                    duration={0.7}
+                    tag="div"
+                    style={{ color: tier.color }}
+                  />
+                  <div className="font-mono text-xs mb-6" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    {tier.tagline}
+                  </div>
+
+                  <div className="mb-8">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={yearly ? "y" : "m"}
+                        initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-baseline gap-1"
+                      >
+                        <span className="font-display font-bold text-white" style={{ fontSize: 48, lineHeight: 1 }}>
+                          ${yearly ? tier.price.yearly : tier.price.monthly}
+                        </span>
+                        {tier.price.monthly > 0 && (
+                          <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>/mo</span>
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                  <ul className="space-y-3 mb-8">
+                    {tier.features.map((f, j) => (
+                      <motion.li
+                        key={j}
+                        initial={{ opacity: 0, x: -8 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.05 + j * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex items-center gap-2.5"
+                      >
+                        <div
+                          className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
+                          style={{
+                            background: `${tier.color}18`,
+                            border: `1px solid ${tier.color}35`,
+                          }}
+                        >
+                          <Check size={10} style={{ color: tier.color }} />
+                        </div>
+                        <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{f}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="p-6 pt-0">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      href={tier.href}
+                      className="block w-full text-center font-mono font-bold text-sm uppercase tracking-wide px-5 py-3.5 transition-all"
+                      style={
+                        tier.highlight
+                          ? { background: "#FFE500", color: "#000" }
+                          : { border: `1px solid ${tier.color}40`, color: tier.color }
+                      }
+                    >
+                      {tier.cta}
+                    </Link>
+                  </motion.div>
+                </div>
+              </div>
+            </TiltCard>
           </motion.div>
         ))}
       </div>
@@ -240,10 +298,10 @@ export default function Pricing() {
                 {tableFeatures.map((row, i) => (
                   <motion.tr
                     key={i}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.04 }}
+                    transition={{ delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
                     className="border-b"
                     style={{ borderColor: "rgba(255,255,255,0.04)" }}
                   >
@@ -265,47 +323,56 @@ export default function Pricing() {
       <DrawLine />
 
       {/* FAQ */}
-      <section className="py-24 px-6" style={{ background: "#070708" }}>
-        <div className="max-w-3xl mx-auto">
-          <Reveal className="mb-12">
-            <h2 className="font-display font-bold text-white mb-2" style={{ fontSize: "clamp(24px, 3vw, 36px)" }}>
-              Frequently Asked
-            </h2>
-          </Reveal>
-          <div className="space-y-2">
-            {faqs.map((faq, i) => (
-              <div key={i} className="rounded-lg overflow-hidden"
-                style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-6 text-left"
-                  style={{ background: "#0f0f12" }}
+      <ClipReveal>
+        <section className="py-24 px-6" style={{ background: "#070708" }}>
+          <div className="max-w-3xl mx-auto">
+            <Reveal className="mb-12">
+              <h2 className="font-display font-bold text-white mb-2" style={{ fontSize: "clamp(24px, 3vw, 36px)" }}>
+                Frequently Asked
+              </h2>
+            </Reveal>
+            <div className="space-y-2">
+              {faqs.map((faq, i) => (
+                <motion.div
+                  key={i}
+                  className="rounded-lg overflow-hidden"
+                  style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="font-mono text-sm text-white">{faq.q}</span>
-                  <motion.span animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                    <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.35)" }} />
-                  </motion.span>
-                </button>
-                <AnimatePresence>
-                  {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <div className="px-6 pb-6 font-mono text-xs leading-relaxed"
-                        style={{ background: "#0f0f12", color: "rgba(255,255,255,0.42)" }}>
-                        {faq.a}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full flex items-center justify-between p-6 text-left"
+                    style={{ background: "#0f0f12" }}
+                  >
+                    <span className="font-mono text-sm text-white">{faq.q}</span>
+                    <motion.span animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.25 }}>
+                      <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.35)" }} />
+                    </motion.span>
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === i && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <div className="px-6 pb-6 font-mono text-xs leading-relaxed"
+                          style={{ background: "#0f0f12", color: "rgba(255,255,255,0.42)" }}>
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ClipReveal>
     </div>
   );
 }

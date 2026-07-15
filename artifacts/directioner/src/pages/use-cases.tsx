@@ -2,6 +2,9 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { motion } from "framer-motion";
 import { Gamepad2, BookOpen, Code2, Music, Film, Dumbbell, Globe, Users, Briefcase } from "lucide-react";
 import { PageHero, DrawLine, Reveal, SplitReveal } from "@/components/ui/motion-primitives";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const useCases = [
   {

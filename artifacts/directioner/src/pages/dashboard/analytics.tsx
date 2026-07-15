@@ -4,6 +4,8 @@ import { useAuth } from "@/lib/auth";
 import { useAnalytics, computeAnalyticsStats } from "@/lib/db";
 import { CountUpNumber } from "@/hooks/CountUpNumber";
 import { DrawOnPath } from "@/components/animations";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { TextScramble } from "@/components/animations/TextScramble";
 import { motion } from "framer-motion";
 import { RefreshCw, Zap } from "lucide-react";
 

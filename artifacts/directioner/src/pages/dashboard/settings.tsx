@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Eye, EyeOff, Copy, RefreshCw, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { ClipReveal } from "@/components/animations/ClipReveal";
+import { TextScramble } from "@/components/animations/TextScramble";
 
 const BORDER = "rgba(255,255,255,0.06)";
 const CARD   = "#0f0f12";

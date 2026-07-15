@@ -1,0 +1,2 @@
+- [Directioner animation system](directioner-animations.md) — 6 animation components added; TextScramble uses React.ElementType not JSX.IntrinsicElements to avoid TS union-too-complex error.
+- [Directioner project setup](directioner-setup.md) — pnpm monorepo, wouter routing, Framer Motion, Supabase; frontend workflow on port 5000 only (api-server needs Supabase secrets).

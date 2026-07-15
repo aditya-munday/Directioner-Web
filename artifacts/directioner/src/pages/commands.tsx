@@ -3,6 +3,8 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronRight } from "lucide-react";
 import { PageHero, DrawLine, Reveal } from "@/components/ui/motion-primitives";
+import { TextScramble } from "@/components/animations/TextScramble";
+import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const commands = {
   "VOICE": [

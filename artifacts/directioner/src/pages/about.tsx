@@ -2,6 +2,10 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { motion } from "framer-motion";
 import { Github, Twitter, MessageSquare } from "lucide-react";
 import { PageHero, SectionTag, Reveal, DrawLine, GlowCard, SplitReveal } from "@/components/ui/motion-primitives";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { TextScramble } from "@/components/animations/TextScramble";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const techStack = [
   { name: "Discord.js v14", desc: "Real-time Discord API gateway" },
@@ -71,23 +75,36 @@ export default function About() {
           <SectionTag number="02" label="Vision Pillars" />
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { n: "01", title: "Privacy First",      desc: "Memory data is siloed per server. Never sold or shared with third parties." },
-              { n: "02", title: "Developer Native",   desc: "Built by a developer, for developers. Extensible, transparent, and open." },
-              { n: "03", title: "Community Focused",  desc: "Adapts to any community type — gaming, study, developer, creative." },
-              { n: "04", title: "Production Grade",   desc: "99.9% uptime SLA. Handles millions of messages at ultra-low latency." },
+              { n: "01", title: "Privacy First",      desc: "Memory data is siloed per server. Never sold or shared with third parties.", color: "#FFE500" },
+              { n: "02", title: "Developer Native",   desc: "Built by a developer, for developers. Extensible, transparent, and open.", color: "#6366f1" },
+              { n: "03", title: "Community Focused",  desc: "Adapts to any community type — gaming, study, developer, creative.", color: "#10b981" },
+              { n: "04", title: "Production Grade",   desc: "99.9% uptime SLA. Handles millions of messages at ultra-low latency.", color: "#0ea5e9" },
             ].map((p, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 24, filter: "blur(4px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                className="p-8 rounded-lg"
-                style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className="font-mono text-2xl font-bold mb-4" style={{ color: "#FFE500" }}>{p.n}.</div>
-                <h3 className="font-display font-bold text-white text-lg uppercase mb-2">{p.title}</h3>
-                <p className="font-mono text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>{p.desc}</p>
+                <TiltCard intensity={5} glowColor={`${p.color}08`}>
+                  <div
+                    className="p-8 rounded-lg relative overflow-hidden h-full"
+                    style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    <BorderBeam color={p.color} duration={6} delay={i * 0.5} size={80} />
+                    <TextScramble
+                      text={`${p.n}.`}
+                      className="font-mono text-2xl font-bold mb-4 block"
+                      delay={i * 0.15}
+                      duration={0.6}
+                      tag="div"
+                      style={{ color: p.color }}
+                    />
+                    <h3 className="font-display font-bold text-white text-lg uppercase mb-2">{p.title}</h3>
+                    <p className="font-mono text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>{p.desc}</p>
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>

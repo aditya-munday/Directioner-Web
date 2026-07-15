@@ -2,6 +2,10 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { motion } from "framer-motion";
 import { Mic, MessageSquare, Database, Code2, GraduationCap, PenLine, Calendar, Users, Gamepad2, Globe2, Target, Users2 } from "lucide-react";
 import { PageHero, SectionTag, Reveal, DrawLine, SplitReveal } from "@/components/ui/motion-primitives";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { TextScramble } from "@/components/animations/TextScramble";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const features = [
   {
@@ -79,36 +83,56 @@ export default function Features() {
 
       <div className="max-w-7xl mx-auto px-6 py-20 space-y-4">
         {features.map((sec, i) => (
-          <motion.div
-            key={sec.num}
-            initial={{ opacity: 0, y: 32 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <ClipReveal key={sec.num} delay={0.05}>
             <DrawLine />
             <div
-              className={`grid lg:grid-cols-2 gap-12 items-center py-20 ${i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""}`}
+              className={`grid lg:grid-cols-2 gap-12 items-center py-20 ${
+                i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+              }`}
             >
               {/* Text */}
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: "rgba(255,255,255,0.25)" }}>{sec.num}</span>
+                <motion.div
+                  className="flex items-center gap-3 mb-6"
+                  initial={{ opacity: 0, x: -16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <TextScramble
+                    text={sec.num}
+                    className="font-mono text-[10px] uppercase tracking-[0.22em]"
+                    delay={0}
+                    duration={0.6}
+                    tag="span"
+                  />
                   <div className="h-px w-6" style={{ background: "rgba(255,255,255,0.08)" }} />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: "rgba(255,255,255,0.25)" }}>{sec.name}</span>
-                </div>
+                  <TextScramble
+                    text={sec.name}
+                    className="font-mono text-[10px] uppercase tracking-[0.22em]"
+                    delay={0.1}
+                    duration={0.5}
+                    tag="span"
+                    style={{ color: "rgba(255,255,255,0.25)" }}
+                  />
+                </motion.div>
+
                 <h2
                   className="font-display font-bold text-white leading-[0.9] tracking-tight mb-4"
                   style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}
                 >
-                  {sec.title}
+                  <SplitReveal text={sec.title} delay={0.05} />
                 </h2>
-                <p className="font-mono text-sm leading-relaxed mb-8"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  {sec.desc}
-                </p>
+
+                <Reveal delay={0.15}>
+                  <p
+                    className="font-mono text-sm leading-relaxed mb-8"
+                    style={{ color: "rgba(255,255,255,0.38)" }}
+                  >
+                    {sec.desc}
+                  </p>
+                </Reveal>
+
                 <ul className="space-y-2.5">
                   {sec.bullets.map((b, j) => (
                     <motion.li
@@ -116,56 +140,82 @@ export default function Features() {
                       initial={{ opacity: 0, x: -12 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.1 + j * 0.06 }}
+                      transition={{ delay: 0.1 + j * 0.07, ease: [0.16, 1, 0.3, 1] }}
                       className="flex items-center gap-3"
                     >
-                      <div
+                      <motion.div
                         className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
                         style={{
                           background: `${sec.color}15`,
                           border: `1px solid ${sec.color}35`,
                         }}
+                        whileHover={{ scale: 1.25, borderColor: sec.color }}
                       >
                         <span className="text-[9px] font-bold" style={{ color: sec.color }}>✓</span>
-                      </div>
+                      </motion.div>
                       <span className="font-mono text-xs text-white/70">{b}</span>
                     </motion.li>
                   ))}
                 </ul>
               </div>
 
-              {/* Visual */}
+              {/* Visual card with TiltCard + BorderBeam */}
               <Reveal delay={0.1}>
-                <div
-                  className="rounded-xl overflow-hidden aspect-video relative flex items-center justify-center"
-                  style={{
-                    background: "#0f0f12",
-                    border: `1px solid ${sec.color}18`,
-                    boxShadow: `0 0 60px ${sec.color}06`,
-                  }}
-                >
-                  <sec.icon
-                    size={80}
-                    style={{ color: sec.color, opacity: 0.08 }}
-                    className="absolute"
-                  />
-                  <div className="relative text-center">
-                    <sec.icon size={40} style={{ color: sec.color }} className="mx-auto mb-4" />
-                    <div className="font-mono text-[10px] uppercase tracking-widest"
-                      style={{ color: "rgba(255,255,255,0.25)" }}>
-                      FIG.{sec.num} — {sec.name}
-                    </div>
-                  </div>
+                <TiltCard intensity={6} glowColor={`${sec.color}10`}>
                   <div
-                    className="absolute bottom-4 right-4 font-mono text-[9px] uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.15)" }}
+                    className="rounded-xl overflow-hidden aspect-video relative flex items-center justify-center"
+                    style={{
+                      background: "#0f0f12",
+                      border: `1px solid ${sec.color}18`,
+                      boxShadow: `0 0 60px ${sec.color}06`,
+                    }}
                   >
-                    MODULE {sec.num}/12
+                    {/* Background icon watermark */}
+                    <sec.icon
+                      size={80}
+                      style={{ color: sec.color, opacity: 0.06 }}
+                      className="absolute"
+                    />
+
+                    {/* Center content */}
+                    <div className="relative text-center z-10">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                      >
+                        <sec.icon size={40} style={{ color: sec.color }} className="mx-auto mb-4" />
+                      </motion.div>
+                      <div
+                        className="font-mono text-[10px] uppercase tracking-widest"
+                        style={{ color: "rgba(255,255,255,0.25)" }}
+                      >
+                        FIG.{sec.num} — {sec.name}
+                      </div>
+                    </div>
+
+                    {/* Corner label */}
+                    <div
+                      className="absolute bottom-4 right-4 font-mono text-[9px] uppercase tracking-widest"
+                      style={{ color: "rgba(255,255,255,0.15)" }}
+                    >
+                      MODULE {sec.num}/12
+                    </div>
+
+                    {/* Scanning line animation */}
+                    <motion.div
+                      className="absolute left-0 right-0 h-px pointer-events-none"
+                      style={{ background: `linear-gradient(90deg, transparent, ${sec.color}40, transparent)` }}
+                      animate={{ top: ["0%", "100%", "0%"] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+
+                    {/* Border beam */}
+                    <BorderBeam color={sec.color} duration={5} delay={i * 0.3} />
                   </div>
-                </div>
+                </TiltCard>
               </Reveal>
             </div>
-          </motion.div>
+          </ClipReveal>
         ))}
       </div>
     </div>

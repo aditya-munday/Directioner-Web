@@ -2,6 +2,9 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { useAuth } from "@/lib/auth";
 import { CountUpNumber } from "@/hooks/CountUpNumber";
 import { EqualizerBars } from "@/components/animations";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { TextScramble } from "@/components/animations/TextScramble";
 import { useServers, useActivityFeed, useAnalytics, useDashboardStats } from "@/lib/db";
 import { Server, Users, MessageSquare, Database, RefreshCw, Zap, Plus } from "lucide-react";
 import { Link } from "wouter";
@@ -63,27 +66,43 @@ export default function DashboardIndex() {
         {statCards.map((s, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-            className="p-6 rounded-lg relative overflow-hidden group transition-all"
-            style={{ background: CARD_BG, border: `1px solid ${BORDER}` }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${s.color}30`; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; }}
+            initial={{ opacity: 0, y: 24, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex items-start justify-between mb-4">
-              <span className="font-mono text-[10px] uppercase tracking-widest"
-                style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</span>
-              <s.icon size={14} style={{ color: s.color, opacity: 0.5 }} className="group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="font-display font-bold text-white" style={{ fontSize: 40, lineHeight: 1 }}>
-              {serversLoading
-                ? <RefreshCw size={18} className="animate-spin" style={{ color: "rgba(255,255,255,0.25)" }} />
-                : <CountUpNumber target={s.value} />}
-            </div>
-            {/* Accent corner */}
-            <div className="absolute bottom-0 right-0 w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-              style={{ background: `radial-gradient(circle at bottom right, ${s.color}15, transparent 70%)` }} />
+            <TiltCard
+              intensity={4}
+              glowColor={`${s.color}10`}
+              className="p-6 rounded-lg relative overflow-hidden group cursor-pointer h-full"
+            >
+              <div
+                className="rounded-lg p-6 relative overflow-hidden h-full"
+                style={{ background: CARD_BG, border: `1px solid ${BORDER}` }}
+              >
+                <BorderBeam color={s.color} duration={6} delay={i * 0.8} size={80} />
+                <div className="flex items-start justify-between mb-4">
+                  <TextScramble
+                    text={s.label}
+                    className="font-mono text-[10px] uppercase tracking-widest"
+                    tag="span"
+                    delay={i * 0.12}
+                    duration={0.6}
+                    style={{ color: "rgba(255,255,255,0.3)" }}
+                  />
+                  <s.icon size={14} style={{ color: s.color, opacity: 0.5 }} className="group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="font-display font-bold text-white" style={{ fontSize: 40, lineHeight: 1 }}>
+                  {serversLoading
+                    ? <RefreshCw size={18} className="animate-spin" style={{ color: "rgba(255,255,255,0.25)" }} />
+                    : <CountUpNumber target={s.value} />}
+                </div>
+                {/* Accent corner */}
+                <div
+                  className="absolute bottom-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{ background: `radial-gradient(circle at bottom right, ${s.color}18, transparent 70%)` }}
+                />
+              </div>
+            </TiltCard>
           </motion.div>
         ))}
       </div>

@@ -3,6 +3,8 @@ import { useAuth } from "@/lib/auth";
 import { useServers, deleteServer } from "@/lib/db";
 import { Link } from "wouter";
 import { EqualizerBars } from "@/components/animations";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { BorderBeam } from "@/components/animations/BorderBeam";
 import { Plus, RefreshCw, Trash2, Settings } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
