@@ -86,7 +86,7 @@ router.delete(
     const [row] = await db
       .delete(memoryNodes)
       .where(
-        and(eq(memoryNodes.id, req.params.id), eq(memoryNodes.userId, req.userId)),
+        and(eq(memoryNodes.id, req.params.id as string), eq(memoryNodes.userId, req.userId)),
       )
       .returning();
 

@@ -20,12 +20,12 @@ export function validate(
   target: RequestTarget = "body",
 ): RequestHandler {
   return (req, _res, next) => {
-    const result = schema.safeParse((req as Record<string, unknown>)[target]);
+    const result = schema.safeParse((req as unknown as Record<string, unknown>)[target]);
     if (!result.success) {
       next(result.error);
       return;
     }
-    (req as Record<string, unknown>)[target] = result.data;
+    (req as unknown as Record<string, unknown>)[target] = result.data;
     next();
   };
 }

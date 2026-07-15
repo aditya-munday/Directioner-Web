@@ -68,7 +68,7 @@ router.get(
     const [row] = await db
       .select()
       .from(servers)
-      .where(and(eq(servers.id, req.params.id), eq(servers.userId, req.userId)))
+      .where(and(eq(servers.id, req.params.id as string), eq(servers.userId, req.userId)))
       .limit(1);
 
     if (!row) throw notFoundError("Server not found");
@@ -93,7 +93,7 @@ router.patch(
     const [row] = await db
       .update(servers)
       .set(body)
-      .where(and(eq(servers.id, req.params.id), eq(servers.userId, req.userId)))
+      .where(and(eq(servers.id, req.params.id as string), eq(servers.userId, req.userId)))
       .returning();
 
     if (!row) throw notFoundError("Server not found");
@@ -110,7 +110,7 @@ router.delete(
   asyncHandler(async (req, res) => {
     const [row] = await db
       .delete(servers)
-      .where(and(eq(servers.id, req.params.id), eq(servers.userId, req.userId)))
+      .where(and(eq(servers.id, req.params.id as string), eq(servers.userId, req.userId)))
       .returning();
 
     if (!row) throw notFoundError("Server not found");
