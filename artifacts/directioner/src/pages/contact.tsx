@@ -33,6 +33,7 @@ export default function Contact() {
         eyebrow="Contact — Get in touch"
         heading="Let's talk."
         sub="Questions, feedback, partnership proposals — every message is read by a human."
+        image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
       />
 
       {/* Channels */}

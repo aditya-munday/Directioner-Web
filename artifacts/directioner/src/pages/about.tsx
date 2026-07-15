@@ -7,6 +7,13 @@ import { TextScramble } from "@/components/animations/TextScramble";
 import { BorderBeam } from "@/components/animations/BorderBeam";
 import { ClipReveal } from "@/components/animations/ClipReveal";
 
+const ABOUT_IMGS = {
+  hero:     "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1920&q=80",
+  founder:  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+  server:   "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900&q=80",
+  stack:    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=80",
+};
+
 const techStack = [
   { name: "Discord.js v14", desc: "Real-time Discord API gateway" },
   { name: "Node.js 20",     desc: "Non-blocking event loop runtime" },
@@ -37,6 +44,7 @@ export default function About() {
         eyebrow="About — Our story"
         heading="Origin Story."
         sub="Directioner was built out of frustration — and a conviction that Discord communities deserve better than static bots."
+        image={ABOUT_IMGS.hero}
       />
 
       <DrawLine />
@@ -52,14 +60,26 @@ export default function About() {
               <p>We didn't want another command bot. We wanted something that felt like a real community member — something that remembered you, understood context, had personality, and could switch from homework help to code review to trivia, all in the same server.</p>
             </div>
             <Reveal delay={0.1}>
-              <div className="rounded-xl overflow-hidden aspect-video relative" style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="font-display font-bold text-center" style={{ fontSize: "clamp(40px, 8vw, 80px)", color: "rgba(255,255,255,0.04)", letterSpacing: "-0.04em" }}>
-                    DIRECTIONER
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>
+              <div className="rounded-xl overflow-hidden aspect-video relative"
+                style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+                <img
+                  src={ABOUT_IMGS.server}
+                  alt="Gaming community"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ filter: "brightness(0.38) saturate(0.65)" }}
+                />
+                <div className="absolute inset-0"
+                  style={{ background: "linear-gradient(to top, rgba(7,7,8,0.85) 0%, transparent 60%)" }} />
+                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase tracking-widest"
+                  style={{ color: "rgba(255,255,255,0.3)" }}>
                   FIG.01 — CORE LOGIC
+                </div>
+                {/* Pull quote overlay */}
+                <div className="absolute bottom-4 right-4 max-w-[200px] text-right">
+                  <span className="font-mono text-[9px] italic leading-relaxed"
+                    style={{ color: "rgba(255,255,255,0.25)" }}>
+                    "Discord is where the internet lives."
+                  </span>
                 </div>
               </div>
             </Reveal>
@@ -120,11 +140,17 @@ export default function About() {
           <div className="grid lg:grid-cols-[280px_1fr] gap-16 items-start">
             <Reveal>
               <div className="aspect-square rounded-xl relative overflow-hidden"
-                style={{ background: "#0f0f12", border: "2px solid rgba(255,229,0,0.2)" }}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-display font-bold text-white" style={{ fontSize: 80, opacity: 0.06 }}>A</span>
-                </div>
-                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>
+                style={{ border: "2px solid rgba(255,229,0,0.2)" }}>
+                <img
+                  src={ABOUT_IMGS.founder}
+                  alt="Founder"
+                  className="absolute inset-0 w-full h-full object-cover object-top"
+                  style={{ filter: "brightness(0.75) saturate(0.8)" }}
+                />
+                <div className="absolute inset-0"
+                  style={{ background: "linear-gradient(to top, rgba(7,7,8,0.7) 0%, transparent 60%)" }} />
+                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase tracking-widest"
+                  style={{ color: "rgba(255,229,0,0.6)" }}>
                   FIG.03 — FOUNDER
                 </div>
               </div>

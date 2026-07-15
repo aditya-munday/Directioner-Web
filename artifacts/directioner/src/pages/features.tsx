@@ -7,6 +7,22 @@ import { TextScramble } from "@/components/animations/TextScramble";
 import { BorderBeam } from "@/components/animations/BorderBeam";
 import { ClipReveal } from "@/components/animations/ClipReveal";
 
+/* Real Unsplash images for each feature module */
+const FEATURE_IMGS: Record<string, string> = {
+  "01": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&q=80",  // voice/mic
+  "02": "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=900&q=80",  // AI
+  "03": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=900&q=80",  // data viz
+  "04": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=80",  // code
+  "05": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=900&q=80",  // study
+  "06": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=900&q=80",  // writing
+  "07": "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80",  // planning
+  "08": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900&q=80",     // gaming community
+  "09": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&q=80",  // entertainment/music
+  "10": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=900&q=80",     // language
+  "11": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=80",  // habit/fitness
+  "12": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&q=80",  // team
+};
+
 const features = [
   {
     num: "01", name: "VOICE", title: "Voice Conversations", icon: Mic, color: "#0ea5e9",
@@ -79,6 +95,7 @@ export default function Features() {
         eyebrow="Features — 12 Modules"
         heading="Capabilities."
         sub="Every tool your Discord server needs — voice, memory, code, education, entertainment, and team productivity."
+        image="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1920&q=80"
       />
 
       <div className="max-w-7xl mx-auto px-6 py-20 space-y-4">
@@ -159,57 +176,57 @@ export default function Features() {
                 </ul>
               </div>
 
-              {/* Visual card with TiltCard + BorderBeam */}
+              {/* Visual card — real photo + icon overlay + BorderBeam */}
               <Reveal delay={0.1}>
-                <TiltCard intensity={6} glowColor={`${sec.color}10`}>
+                <TiltCard intensity={5} glowColor={`${sec.color}0a`}>
                   <div
-                    className="rounded-xl overflow-hidden aspect-video relative flex items-center justify-center"
-                    style={{
-                      background: "#0f0f12",
-                      border: `1px solid ${sec.color}18`,
-                      boxShadow: `0 0 60px ${sec.color}06`,
-                    }}
+                    className="rounded-xl overflow-hidden aspect-[4/3] relative"
+                    style={{ border: `1px solid ${sec.color}18` }}
                   >
-                    {/* Background icon watermark */}
-                    <sec.icon
-                      size={80}
-                      style={{ color: sec.color, opacity: 0.06 }}
-                      className="absolute"
+                    {/* Real photo */}
+                    <img
+                      src={FEATURE_IMGS[sec.num] ?? FEATURE_IMGS["01"]}
+                      alt={sec.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ filter: "brightness(0.35) saturate(0.6)" }}
+                      loading="lazy"
                     />
+                    {/* Colour tint */}
+                    <div className="absolute inset-0"
+                      style={{ background: `linear-gradient(135deg, ${sec.color}18 0%, transparent 60%)` }} />
+                    <div className="absolute inset-0"
+                      style={{ background: "linear-gradient(to top, rgba(7,7,8,0.9) 0%, transparent 55%)" }} />
 
-                    {/* Center content */}
-                    <div className="relative text-center z-10">
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                      >
-                        <sec.icon size={40} style={{ color: sec.color }} className="mx-auto mb-4" />
-                      </motion.div>
-                      <div
-                        className="font-mono text-[10px] uppercase tracking-widest"
-                        style={{ color: "rgba(255,255,255,0.25)" }}
-                      >
-                        FIG.{sec.num} — {sec.name}
+                    {/* Top-left icon badge */}
+                    <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ background: `${sec.color}20`, border: `1px solid ${sec.color}35`, backdropFilter: "blur(8px)" }}>
+                        <sec.icon size={14} style={{ color: sec.color }} />
                       </div>
                     </div>
 
-                    {/* Corner label */}
-                    <div
-                      className="absolute bottom-4 right-4 font-mono text-[9px] uppercase tracking-widest"
-                      style={{ color: "rgba(255,255,255,0.15)" }}
-                    >
-                      MODULE {sec.num}/12
+                    {/* Bottom label */}
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: sec.color, opacity: 0.8 }}>
+                          {sec.name}
+                        </div>
+                        <div className="font-mono text-[9px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          Module {sec.num}/12
+                        </div>
+                      </div>
+                      <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.15)" }}>
+                        FIG.{sec.num}
+                      </span>
                     </div>
 
-                    {/* Scanning line animation */}
+                    {/* Scanning line */}
                     <motion.div
                       className="absolute left-0 right-0 h-px pointer-events-none"
-                      style={{ background: `linear-gradient(90deg, transparent, ${sec.color}40, transparent)` }}
+                      style={{ background: `linear-gradient(90deg, transparent, ${sec.color}35, transparent)` }}
                       animate={{ top: ["0%", "100%", "0%"] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     />
-
-                    {/* Border beam */}
                     <BorderBeam color={sec.color} duration={5} delay={i * 0.3} />
                   </div>
                 </TiltCard>

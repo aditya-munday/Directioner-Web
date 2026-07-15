@@ -123,6 +123,7 @@ export default function Pricing() {
         eyebrow="Pricing — Simple plans"
         heading="Choose your tier."
         sub="Start free. Scale as your community grows. No lock-in."
+        image="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1920&q=80"
       />
 
       {/* Billing toggle */}

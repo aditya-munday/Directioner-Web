@@ -114,65 +114,70 @@ export function SectionTag({
 }
 
 /** Reusable page hero — dark bg with gradient glow */
+/** deeo.studio / lapz.io style page hero — left-anchored, cinematic, optional full-bleed image */
 export function PageHero({
   eyebrow,
   heading,
   sub,
   cta,
+  image,
 }: {
   eyebrow?: string;
   heading: string;
   sub?: string;
   cta?: { label: string; href: string };
+  image?: string;
 }) {
   return (
     <section
-      className="relative pt-40 pb-28 px-6 overflow-hidden"
-      style={{ background: "#070708" }}
+      className="relative overflow-hidden"
+      style={{ background: "#070708", paddingTop: "clamp(120px, 14vw, 180px)", paddingBottom: "clamp(60px, 8vw, 100px)" }}
     >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.1) 0%, transparent 70%)",
-        }}
-      />
+      {/* Optional full-bleed image */}
+      {image && (
+        <div className="absolute inset-0 pointer-events-none">
+          <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: "brightness(0.2) saturate(0.6)" }} />
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to right, rgba(7,7,8,0.98) 0%, rgba(7,7,8,0.7) 60%, rgba(7,7,8,0.4) 100%)" }} />
+        </div>
+      )}
+
+      {/* Subtle gradient when no image */}
+      {!image && (
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 70% 50% at 0% 100%, rgba(255,229,0,0.03) 0%, transparent 60%)" }} />
+      )}
+
       <div className="grain-overlay" />
-      <div className="max-w-7xl mx-auto relative">
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
         {eyebrow && (
           <Reveal>
-            <span
-              className="font-mono text-[10px] uppercase tracking-[0.22em] block mb-8"
-              style={{ color: "rgba(255,255,255,0.25)" }}
-            >
+            <div className="font-mono text-[9px] uppercase tracking-[0.28em] mb-8"
+              style={{ color: "rgba(255,255,255,0.22)" }}>
               {eyebrow}
-            </span>
+            </div>
           </Reveal>
         )}
-        <h1
-          className="font-display font-bold text-white leading-[0.88] tracking-tight mb-6"
-          style={{ fontSize: "clamp(44px, 8vw, 110px)" }}
-        >
+        <h1 className="font-display font-bold text-white leading-[0.88] tracking-tight mb-6"
+          style={{ fontSize: "clamp(52px, 9vw, 120px)" }}>
           <SplitReveal text={heading} delay={0.05} />
         </h1>
         {sub && (
-          <Reveal delay={0.25}>
-            <p
-              className="font-mono text-sm leading-relaxed max-w-xl"
-              style={{ color: "rgba(255,255,255,0.35)" }}
-            >
+          <Reveal delay={0.22}>
+            <p className="font-mono text-sm leading-relaxed max-w-lg"
+              style={{ color: "rgba(255,255,255,0.35)" }}>
               {sub}
             </p>
           </Reveal>
         )}
         {cta && (
-          <Reveal delay={0.35}>
-            <Link
-              href={cta.href}
-              className="inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3.5 mt-8 transition-colors"
-              style={{ background: "#FFE500", color: "#000" }}
-            >
-              {cta.label} <ArrowUpRight size={15} />
+          <Reveal delay={0.32}>
+            <Link href={cta.href}
+              className="inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3.5 mt-8 transition-all"
+              style={{ background: "#FFE500", color: "#000" }}>
+              {cta.label} <ArrowUpRight size={14} />
             </Link>
           </Reveal>
         )}

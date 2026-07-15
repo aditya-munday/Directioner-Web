@@ -26,3 +26,14 @@ Uses `wouter` (not React Router). Route changes wrapped in `<PageTransition>` (A
 
 ## TypeScript
 Express 5 params typed as `string | string[]` — must cast `req.params.id as string` in route handlers.
+
+## Image strategy
+All images use Unsplash CDN directly (`https://images.unsplash.com/photo-XXXX?w=NNN&q=80`) — no auth needed. Brightness filter 0.3–0.45 + gradient overlay to dim for text legibility. Real images replace all icon/emoji placeholder panels across every page.
+
+## Design direction (reference sites: deeo.studio, lapz.io, cp-agency.eu, noon.ai, morningstar.ventures)
+- Hero: full-bleed photo, bottom-left editorial headline (deeo.studio), floating stat card top-right (cp-agency.eu), scroll indicator
+- Inner page heroes: `PageHero` component accepts optional `image` prop for full-bleed bg photo
+- Typography: massive display, `clamp()` fluid sizing, `letterSpacing: "-0.04em"`, extreme whitespace
+- Sections alternate: text-left+photo-right, photo-left+text-right, editorial magazine rhythm
+- Stats strip: `grid-cols-4 divide-x divide-y` on `#0a0a0c` background
+- `DrawLine` component used as section dividers throughout
