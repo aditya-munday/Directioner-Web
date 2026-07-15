@@ -133,7 +133,6 @@ export default function FAQ() {
         eyebrow="FAQ — Help Center"
         heading="Answers."
         sub="Everything you need to know about Directioner. Can't find the answer? Reach out on Discord."
-        image="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920&q=80"
       />
 
       <div className="max-w-7xl mx-auto px-6 pb-24 flex flex-col lg:flex-row gap-12">
