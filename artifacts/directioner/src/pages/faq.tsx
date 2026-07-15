@@ -1,148 +1,202 @@
-import { usePageTitle } from "@/hooks/use-page-title";
 import { useState } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { SectionLabel } from "@/components/layout/SectionLabel";
 import { Link } from "wouter";
+import { PageHero, Reveal, DrawLine } from "@/components/ui/motion-primitives";
+
+type FAQ = { q: string; a: string };
+
+const faqData: { category: string; color: string; faqs: FAQ[] }[] = [
+  {
+    category: "General",
+    color: "#FFE500",
+    faqs: [
+      { q: "What is Directioner?", a: "Directioner is an advanced AI-powered Discord bot that provides natural conversation, voice interaction, persistent memory, and specialized modes for productivity, learning, gaming, and more." },
+      { q: "How is Directioner different from other bots?", a: "Three key differences: genuine long-term memory (per user, per server), real-time voice conversation support, and personality modes that adapt to your community's culture rather than giving generic responses." },
+      { q: "What AI model does Directioner use?", a: "Directioner uses OpenAI's GPT-4o as its primary model for text intelligence. Voice synthesis uses ElevenLabs API. You can select GPT-4o Mini for faster responses on the Model setting." },
+      { q: "Is Directioner safe for all ages?", a: "Directioner is designed for communities 13+ per Discord ToS. You can configure content filters in server settings to restrict explicit or sensitive topics." },
+    ],
+  },
+  {
+    category: "Setup & Installation",
+    color: "#0ea5e9",
+    faqs: [
+      { q: "How do I add Directioner to my server?", a: "Click the 'Add to Discord' button, select your server, approve the requested permissions, and run /setup to configure the bot. Total time: under 60 seconds." },
+      { q: "What permissions does Directioner need?", a: "Required: Send Messages, Read Message History, Connect (voice), Speak (voice). Optional: Manage Messages (for cleanup), Embed Links, Attach Files." },
+      { q: "Can I use Directioner in multiple servers?", a: "Yes — each server has its own isolated settings, memory, and personality configuration. Your Pro plan allows up to 3 concurrent server instances." },
+    ],
+  },
+  {
+    category: "Features",
+    color: "#a855f7",
+    faqs: [
+      { q: "How does the memory system work?", a: "Directioner uses a vector database to store and retrieve conversational context, user preferences, and factual information. Memories are categorized as user-level, channel-level, or server-level and automatically recalled when relevant." },
+      { q: "What personality modes are available?", a: "Six modes: Chat (balanced and casual), Tutor (educational and patient), Coder (technical and precise), Chaos (unhinged and creative), Creative (imaginative storytelling), and Debate (analytical and Socratic)." },
+      { q: "Does Directioner support voice channels?", a: "Yes. Use /join to have Directioner enter your voice channel. It will listen for its wake word, synthesize speech responses, and can speak back to the entire channel." },
+      { q: "Can Directioner remember things between sessions?", a: "Yes. Memories persist across all sessions indefinitely (within your plan's node limit). Use /memory list to view stored memories and /forget [id] to delete specific ones." },
+    ],
+  },
+  {
+    category: "Pricing & Plans",
+    color: "#10b981",
+    faqs: [
+      { q: "What's included in the free tier?", a: "The free tier includes 1 bot instance, 100 messages per day, 5 voice interactions per day, and basic text modes. It's a permanent free tier — no trial expiry." },
+      { q: "Can I switch plans later?", a: "Upgrade anytime; it takes effect immediately on a prorated basis. Downgrades take effect at your next billing cycle renewal." },
+      { q: "Is there a yearly discount?", a: "Yes — paying annually saves 20%. You can toggle between billing cycles on the pricing page." },
+      { q: "Do you offer refunds?", a: "We offer a full refund within 7 days of your first payment if you're not satisfied. After that, no partial refunds are provided but you can cancel anytime." },
+    ],
+  },
+  {
+    category: "Privacy & Security",
+    color: "#f43f5e",
+    faqs: [
+      { q: "Is my server's data private?", a: "Yes. Each server's memory and conversation data is completely siloed and never shared across servers or sold to third parties." },
+      { q: "Can I delete all my data?", a: "Absolutely. Use /memory clear to wipe all server memories, or contact support to request full account data deletion within 48 hours." },
+      { q: "Is the connection to Discord encrypted?", a: "Yes. All data in transit uses TLS 1.3. Memory data at rest is encrypted using AES-256." },
+    ],
+  },
+  {
+    category: "Technical",
+    color: "#6366f1",
+    faqs: [
+      { q: "What is the uptime SLA?", a: "Free and Starter tiers have best-effort uptime. Pro provides a 99.9% monthly SLA. Max provides 99.99% with dedicated infrastructure." },
+      { q: "How is latency handled for voice?", a: "Voice processing is optimized for < 200ms end-to-end latency using co-located inference nodes. Latency may vary by region." },
+      { q: "Is there an API for developers?", a: "API access is available on the Max plan. Docs are available at api.directioner.app. Custom webhooks and integration SDKs are in development." },
+    ],
+  },
+  {
+    category: "Support",
+    color: "#f97316",
+    faqs: [
+      { q: "How do I get support?", a: "Use /support in Discord for built-in help, email us at support@directioner.app, or join our official support server." },
+      { q: "What are the support hours?", a: "Community support is 24/7 via Discord. Email support is Monday–Friday, 9 AM–6 PM IST. Max plan customers receive 24/7 phone support." },
+      { q: "How do I report a bug?", a: "Use the /feedback command in any server, or open a GitHub issue at github.com/directioner-bot/directioner. We triage bug reports within 24 hours." },
+    ],
+  },
+];
+
+function FAQAccordion({ faqs, color }: { faqs: FAQ[]; color: string }) {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <div className="space-y-2">
+      {faqs.map((faq, i) => (
+        <div
+          key={i}
+          className="rounded-lg overflow-hidden"
+          style={{ border: `1px solid ${open === i ? color + "25" : "rgba(255,255,255,0.06)"}` }}
+        >
+          <button
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full flex items-center justify-between p-5 text-left transition-colors"
+            style={{ background: "#0f0f12" }}
+          >
+            <span className="font-mono text-sm text-white pr-6">{faq.q}</span>
+            <motion.span animate={{ rotate: open === i ? 180 : 0 }} transition={{ duration: 0.25 }}>
+              <ChevronDown size={16} style={{ color: open === i ? color : "rgba(255,255,255,0.3)" }} />
+            </motion.span>
+          </button>
+          <AnimatePresence>
+            {open === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div
+                  className="px-5 pb-5 font-mono text-xs leading-relaxed"
+                  style={{ background: "#0f0f12", color: "rgba(255,255,255,0.45)" }}
+                >
+                  {faq.a}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function FAQ() {
   usePageTitle("FAQ");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState("General");
 
-  const categories = [
-    {
-      title: "1. Getting Started",
-      faqs: [
-        { id: "1-1", q: "How do I add Directioner to my Discord server?", a: "Click 'Add to Discord' on our website, authorize the bot with the required permissions, and it'll appear in your server within seconds. No configuration required to get started." },
-        { id: "1-2", q: "What permissions does Directioner need?", a: "Send Messages, Read Message History, Connect (voice), Speak (voice), and Embed Links. We request only what we need." },
-        { id: "1-3", q: "How long does setup take?", a: "Under 5 minutes. Add the bot, optionally configure which channels it can respond in, and you're done." },
-        { id: "1-4", q: "Is there a free trial?", a: "Yes — the Free tier is completely free forever. No credit card required. Upgrade only when you need more credits or features." }
-      ]
-    },
-    {
-      title: "2. Features",
-      faqs: [
-        { id: "2-1", q: "How many memory nodes do I get?", a: "Free: 50 nodes. Basic: 500. Pro: 5,000. Max: Unlimited. Memory nodes store user preferences, facts, and conversation summaries." },
-        { id: "2-2", q: "Does it work in voice channels?", a: "Yes, on Basic and above. The bot joins voice channels, listens, and responds with ultra-low-latency voice synthesis." },
-        { id: "2-3", q: "How do I switch between AI modes?", a: "Use /chatmode [mode] where mode is: chat, tutor, coder, chaos, creative, or debate. Or use /chatmode in DM to set a global default." },
-        { id: "2-4", q: "What languages does it support?", a: "20+ languages including English, Spanish, French, German, Japanese, Chinese, Korean, Arabic, Portuguese, Italian, and more." }
-      ]
-    },
-    {
-      title: "3. Privacy & Security",
-      faqs: [
-        { id: "3-1", q: "Does Directioner store my messages?", a: "We store only what's explicitly saved as memory nodes. Regular conversation messages are processed but not permanently stored after the response is generated." },
-        { id: "3-2", q: "Who can see my server's data?", a: "Nobody but you and your server admins. Data is strictly siloed per Discord server and never shared." },
-        { id: "3-3", q: "Are you GDPR compliant?", a: "Yes. You can export all your data via /export and delete everything via /deletedata. We honor all data subject requests within 30 days." },
-        { id: "3-4", q: "Is the communication encrypted?", a: "Yes. All data in transit uses TLS 1.3. Data at rest is encrypted using AES-256." }
-      ]
-    },
-    {
-      title: "4. Technical",
-      faqs: [
-        { id: "4-1", q: "What's the typical response latency?", a: "Under 200ms for text responses. Voice responses are 150-250ms end-to-end." },
-        { id: "4-2", q: "What's your uptime SLA?", a: "99.9% uptime for Pro and Max tiers. Free and Basic have best-effort availability." },
-        { id: "4-3", q: "Are there rate limits?", a: "Yes, based on your daily credit cap: Free 50/day, Basic 300/day, Pro 1,500/day, Max unlimited." },
-        { id: "4-4", q: "Do you offer an API?", a: "API access is available on the Max tier. It allows you to trigger bot actions, read analytics, and manage memory programmatically." }
-      ]
-    },
-    {
-      title: "5. Modes",
-      faqs: [
-        { id: "5-1", q: "What's the difference between /chat and /tutor mode?", a: "/chat is natural conversation. /tutor is optimized for education — more patient, uses examples, breaks down concepts, and asks comprehension questions." },
-        { id: "5-2", q: "Can I set a mode permanently for my server?", a: "Yes. Admins can use /chatmode [mode] to set the server-wide default. Individual users can still override in DM." },
-        { id: "5-3", q: "Is /chaos mode safe?", a: "/chaos mode is unpredictable and playful, but still follows Discord's terms of service and our content policies." },
-        { id: "5-4", q: "Can I create custom personality modes?", a: "On Max tier, you can define custom personality presets with specific traits, tone, and behavior guidelines." }
-      ]
-    },
-    {
-      title: "6. Voice & Text",
-      faqs: [
-        { id: "6-1", q: "How good is the voice quality?", a: "We use state-of-the-art neural TTS with natural prosody. Most users can't distinguish it from human voice at normal conversation speed." },
-        { id: "6-2", q: "Can it hear multiple people talking at once?", a: "Yes. Multi-speaker mode identifies and responds to the primary speaker while tracking context from others." },
-        { id: "6-3", q: "Does it support Discord formatting?", a: "Yes. It uses **bold**, *italic*, `code blocks`, and > quotes natively in Discord." },
-        { id: "6-4", q: "Can I attach files for it to analyze?", a: "Yes on Pro and Max. The bot can analyze images, PDFs, and code files attached to messages." }
-      ]
-    },
-    {
-      title: "7. For Communities",
-      faqs: [
-        { id: "7-1", q: "Will it handle 10,000-member servers?", a: "Yes. Directioner is horizontally scaled and battle-tested on servers with 50k+ members." },
-        { id: "7-2", q: "Can I restrict it to specific channels?", a: "Yes. Use /channels to toggle which text and voice channels the bot is active in." },
-        { id: "7-3", q: "Can mods control what the bot does?", a: "Yes. Server admins and roles you designate can use admin commands like /enable, /disable, /reset, and /logs." },
-        { id: "7-4", q: "Can it moderate the server?", a: "Not directly, but it can flag messages, summarize conflicts, and explain community rules. Full moderation features are on the roadmap." }
-      ]
-    },
-    {
-      title: "8. Content & Creativity",
-      faqs: [
-        { id: "8-1", q: "Can it write long-form content?", a: "Yes. On Pro and Max, responses can be up to 4,000 tokens (roughly 3,000 words). Use /response-length long to enable this." },
-        { id: "8-2", q: "Does it have an NSFW mode?", a: "No. Directioner does not generate NSFW content. This cannot be changed." },
-        { id: "8-3", q: "Can it maintain a character for roleplay?", a: "Yes. Use /personality to set a character description. The bot will maintain that persona across the session." },
-        { id: "8-4", q: "What creative writing styles can it mimic?", a: "Any style you describe — minimalist, Hemingway, sci-fi, fantasy, academic, casual blog, ad copy, and more." }
-      ]
-    },
-    {
-      title: "9. Productivity",
-      faqs: [
-        { id: "9-1", q: "Can it set reminders?", a: "Yes. 'Remind me to submit the report tomorrow at 9am' and it will send a DM reminder." },
-        { id: "9-2", q: "Can it summarize long threads?", a: "Yes. Reply to any message with /summary and it'll summarize the last 50 messages in that channel." },
-        { id: "9-3", q: "Does it integrate with external tools?", a: "On Max tier, it integrates with GitHub, Linear, Notion, and Google Calendar via slash commands." },
-        { id: "9-4", q: "Can it track team tasks?", a: "Yes. In /tutor or default mode, say 'create a task list' and it'll format and track items through the conversation." }
-      ]
-    }
-  ];
+  const current = faqData.find(f => f.category === activeCategory)!;
 
   return (
-    <div className="pt-32 pb-32 px-6 max-w-4xl mx-auto min-h-screen">
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl md:text-7xl font-display font-black uppercase mb-6 text-white">FAQ.</h1>
-        <div className="font-mono text-primary text-sm uppercase border border-primary bg-primary/10 inline-block px-4 py-2">
-          Frequently Asked Questions
-        </div>
-      </div>
+    <div style={{ background: "#070708" }}>
+      <PageHero
+        eyebrow="FAQ — Help Center"
+        heading="Answers."
+        sub="Everything you need to know about Directioner. Can't find the answer? Reach out on Discord."
+      />
 
-      <div className="space-y-16">
-        {categories.map((cat, i) => (
-          <div key={i} className="space-y-6">
-            <h2 className="font-display font-bold text-2xl uppercase text-white border-b border-border pb-4">{cat.title}</h2>
-            
-            <div className="space-y-4">
-              {cat.faqs.map((faq) => (
-                <div key={faq.id} className="border border-border bg-card overflow-hidden">
-                  <button 
-                    className="w-full text-left p-6 font-mono font-bold text-sm md:text-base uppercase flex justify-between items-center hover:bg-white/5 transition-colors text-white"
-                    onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
-                  >
-                    <span className="pr-4">{faq.q}</span>
-                    <ChevronDown className={`transform transition-transform shrink-0 text-primary ${openId === faq.id ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openId === faq.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <div className="px-6 pb-6 pt-2 text-muted-foreground font-sans text-base leading-relaxed border-t border-border mt-2">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
+      <div className="max-w-7xl mx-auto px-6 pb-24 flex flex-col lg:flex-row gap-12">
+        {/* Category nav */}
+        <div className="w-full lg:w-52 shrink-0 space-y-1">
+          {faqData.map(cat => (
+            <button
+              key={cat.category}
+              onClick={() => setActiveCategory(cat.category)}
+              className="w-full text-left flex items-center justify-between px-4 py-3 rounded font-mono text-xs uppercase tracking-wide transition-all"
+              style={{
+                background: activeCategory === cat.category ? `${cat.color}10` : "transparent",
+                color: activeCategory === cat.category ? cat.color : "rgba(255,255,255,0.35)",
+                borderLeft: activeCategory === cat.category ? `2px solid ${cat.color}` : "2px solid transparent",
+              }}
+            >
+              <span>{cat.category}</span>
+              <span className="text-[9px] opacity-50">{cat.faqs.length}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* FAQ content */}
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-2 h-2 rounded-full" style={{ background: current.color }} />
+            <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {current.category} — {current.faqs.length} questions
+            </span>
           </div>
-        ))}
-      </div>
-      
-      <div className="mt-24 text-center border border-border p-12 bg-card">
-        <p className="font-mono text-sm uppercase mb-6 text-white">Still have questions?</p>
-        <Link href="/contact" className="inline-block bg-primary text-black font-mono font-bold px-8 py-4 uppercase text-sm corner-brackets hover:bg-white transition-colors">
-          Contact Support
-        </Link>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <FAQAccordion faqs={current.faqs} color={current.color} />
+            </motion.div>
+          </AnimatePresence>
+
+          <DrawLine />
+          <Reveal className="pt-12">
+            <div className="p-8 rounded-xl text-center"
+              style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="font-mono text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Still have questions? We're here.
+              </p>
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <Link href="/contact"
+                  className="font-mono font-bold text-xs uppercase tracking-wide px-6 py-3 transition-all"
+                  style={{ background: "#FFE500", color: "#000" }}>
+                  Contact Support
+                </Link>
+                <a href="https://discord.com/invite/directioner" target="_blank" rel="noopener noreferrer"
+                  className="font-mono text-xs uppercase tracking-wide px-6 py-3 transition-all"
+                  style={{ border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.25)"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)"; }}>
+                  Join Discord
+                </a>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </div>
     </div>
   );

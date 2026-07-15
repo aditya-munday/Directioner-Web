@@ -1,115 +1,179 @@
-import { usePageTitle } from "@/hooks/use-page-title";
 import { useState } from "react";
-import { MessageSquare, Mail, Github, Twitter, Loader2 } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { motion } from "framer-motion";
+import { Mail, MessageSquare, Github, Twitter, Send } from "lucide-react";
+import { PageHero, Reveal, DrawLine, Input, PrimaryBtn } from "@/components/ui/motion-primitives";
+
+const channels = [
+  { icon: MessageSquare, label: "Discord Support Server", desc: "Fastest response — live community + team", action: "Join Discord", href: "https://discord.com/invite/directioner", color: "#5865F2" },
+  { icon: Mail,          label: "Email Support",           desc: "Business inquiries and enterprise pricing", action: "Email Us",     href: "mailto:support@directioner.app",    color: "#FFE500" },
+  { icon: Github,        label: "GitHub Issues",           desc: "Bug reports and feature requests",          action: "Open Issue",   href: "https://github.com/directioner",    color: "#a855f7" },
+  { icon: Twitter,       label: "Twitter / X",             desc: "Announcements and quick updates",           action: "Follow Us",    href: "https://twitter.com/directioner",   color: "#0ea5e9" },
+];
 
 export default function Contact() {
   usePageTitle("Contact");
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setSubmitted(true);
-      setLoading(false);
-    }, 1500);
+    setSubmitting(true);
+    await new Promise(r => setTimeout(r, 1400));
+    setSubmitting(false);
+    setDone(true);
   };
 
   return (
-    <div className="pt-24 pb-32 px-6 max-w-6xl mx-auto min-h-screen">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl md:text-7xl font-display font-black uppercase mb-4">Transmission.</h1>
-        <p className="font-mono text-muted-foreground uppercase text-sm">Establish a direct link to the developers.</p>
-      </div>
+    <div style={{ background: "#070708" }}>
+      <PageHero
+        eyebrow="Contact — Get in touch"
+        heading="Let's talk."
+        sub="Questions, feedback, partnership proposals — every message is read by a human."
+      />
 
-      <div className="grid md:grid-cols-5 gap-12">
-        {/* Left Col: Channels */}
-        <div className="md:col-span-2 space-y-4">
-          <h2 className="font-mono text-sm font-bold uppercase text-primary mb-6 border-b border-border pb-2">Channels</h2>
-          
-          <a href="#" className="flex items-center gap-4 p-4 border border-border bg-card hover:border-primary transition-colors group">
-            <MessageSquare className="text-muted-foreground group-hover:text-primary transition-colors" />
-            <div>
-              <div className="font-bold uppercase">Discord Server</div>
-              <div className="font-mono text-xs text-muted-foreground">Fastest response</div>
-            </div>
-          </a>
-          
-          <a href="#" className="flex items-center gap-4 p-4 border border-border bg-card hover:border-primary transition-colors group">
-            <Mail className="text-muted-foreground group-hover:text-primary transition-colors" />
-            <div>
-              <div className="font-bold uppercase">Email Support</div>
-              <div className="font-mono text-xs text-muted-foreground">hello@directioner.bot</div>
-            </div>
-          </a>
-          
-          <a href="#" className="flex items-center gap-4 p-4 border border-border bg-card hover:border-primary transition-colors group">
-            <Github className="text-muted-foreground group-hover:text-primary transition-colors" />
-            <div>
-              <div className="font-bold uppercase">GitHub Issues</div>
-              <div className="font-mono text-xs text-muted-foreground">Bug reports only</div>
-            </div>
-          </a>
-          
-          <a href="#" className="flex items-center gap-4 p-4 border border-border bg-card hover:border-primary transition-colors group">
-            <Twitter className="text-muted-foreground group-hover:text-primary transition-colors" />
-            <div>
-              <div className="font-bold uppercase">Twitter / X</div>
-              <div className="font-mono text-xs text-muted-foreground">@directionerbot</div>
-            </div>
-          </a>
-        </div>
-
-        {/* Right Col: Form */}
-        <div className="md:col-span-3 border border-border bg-card p-8">
-          <h2 className="font-mono text-sm font-bold uppercase text-primary mb-6">Direct Message</h2>
-          
-          {submitted ? (
-            <div className="h-64 flex flex-col items-center justify-center border border-accent bg-accent/10 text-accent font-mono text-sm uppercase text-center p-6">
-              <div className="text-4xl mb-4">✓</div>
-              // TRANSMISSION RECEIVED ———————————<br/>
-              AWAITING RESPONSE.
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="font-mono text-xs uppercase text-muted-foreground">Name</label>
-                  <input required className="w-full bg-background border border-border p-3 font-mono text-sm focus:outline-none focus:border-primary transition-colors" />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-mono text-xs uppercase text-muted-foreground">Email</label>
-                  <input type="email" required className="w-full bg-background border border-border p-3 font-mono text-sm focus:outline-none focus:border-primary transition-colors" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="font-mono text-xs uppercase text-muted-foreground">Subject</label>
-                <select className="w-full bg-background border border-border p-3 font-mono text-sm focus:outline-none focus:border-primary transition-colors text-white appearance-none">
-                  <option>General Inquiry</option>
-                  <option>Technical Support</option>
-                  <option>Billing Issue</option>
-                  <option>Partnership</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="font-mono text-xs uppercase text-muted-foreground">Message</label>
-                <textarea required rows={5} className="w-full bg-background border border-border p-3 font-mono text-sm focus:outline-none focus:border-primary transition-colors resize-none" />
-              </div>
-              
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-primary text-black font-mono font-bold px-6 py-4 uppercase text-sm corner-brackets hover:bg-white transition-colors flex justify-center items-center"
+      {/* Channels */}
+      <section className="pb-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-24">
+            {channels.map((ch, i) => (
+              <motion.a
+                key={i}
+                href={ch.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -4 }}
+                className="p-6 rounded-xl flex flex-col gap-4 group transition-all"
+                style={{
+                  background: "#0f0f12",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = `${ch.color}30`;
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 30px ${ch.color}08`;
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                }}
               >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : "Send Message"}
-              </button>
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ background: `${ch.color}15`, border: `1px solid ${ch.color}25` }}
+                >
+                  <ch.icon size={18} style={{ color: ch.color }} />
+                </div>
+                <div>
+                  <div className="font-mono text-sm font-bold text-white mb-1">{ch.label}</div>
+                  <div className="font-mono text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>{ch.desc}</div>
+                </div>
+                <div className="font-mono text-[10px] uppercase tracking-widest mt-auto" style={{ color: ch.color }}>
+                  {ch.action} →
+                </div>
+              </motion.a>
+            ))}
+          </div>
+
+          <DrawLine />
+        </div>
+      </section>
+
+      {/* Contact form */}
+      <section className="pb-32 px-6" style={{ background: "#070708" }}>
+        <div className="max-w-2xl mx-auto">
+          <Reveal className="mb-12">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+              SEND A MESSAGE
+            </div>
+            <h2 className="font-display font-bold text-white" style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em" }}>
+              Write to us.
+            </h2>
+          </Reveal>
+
+          {done ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="p-12 rounded-xl text-center"
+              style={{ background: "#0f0f12", border: "1px solid rgba(255,229,0,0.2)" }}
+            >
+              <div className="font-mono text-4xl mb-4">✓</div>
+              <h3 className="font-display font-bold text-white text-2xl mb-3">Message sent.</h3>
+              <p className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                We'll respond within 24 hours. Check your Discord DMs too — we sometimes reach out there.
+              </p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input
+                  label="Your Name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                />
+                <Input
+                  label="Email Address"
+                  type="email"
+                  placeholder="john@example.com"
+                  required
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+              <Input
+                label="Subject"
+                type="text"
+                placeholder="Bug report / Feature request / Business inquiry"
+                required
+                value={form.subject}
+                onChange={e => setForm({ ...form, subject: e.target.value })}
+              />
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] uppercase tracking-widest block"
+                  style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Message
+                </label>
+                <textarea
+                  rows={6}
+                  placeholder="Describe your question or issue in as much detail as you can..."
+                  required
+                  value={form.message}
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  className="w-full px-4 py-3 font-mono text-sm text-white focus:outline-none resize-none transition-colors"
+                  style={{
+                    background: "#0f0f12",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                  onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                />
+              </div>
+              <PrimaryBtn type="submit" disabled={submitting}>
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border border-black border-t-transparent rounded-full animate-spin" />
+                    Sending...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Send size={14} /> Send Message
+                  </span>
+                )}
+              </PrimaryBtn>
             </form>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

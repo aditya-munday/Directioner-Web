@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { Reveal, Input, PrimaryBtn } from "@/components/ui/motion-primitives";
 
 export default function ForgotPassword() {
-  usePageTitle("Forgot Password");
-  const [email, setEmail] = useState("");
+  usePageTitle("Reset Password");
+  const [email, setEmail]       = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,54 +30,96 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-md border border-border bg-card p-12 relative overflow-hidden">
-        {/* Blueprint line */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
-        
-        <h1 className="text-3xl font-display font-black text-white mb-2">Reset.</h1>
-        <p className="font-mono text-xs text-muted-foreground uppercase mb-8">
-          System recovery protocol initialized.
-        </p>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-6 py-20"
+      style={{ background: "#070708" }}
+    >
+      {/* Watermark */}
+      <div
+        className="fixed inset-0 flex items-center justify-center pointer-events-none select-none"
+        style={{
+          fontFamily: "'TASA Orbiter Display', sans-serif",
+          fontWeight: 800,
+          fontSize: "30vw",
+          color: "rgba(255,255,255,0.015)",
+          letterSpacing: "-0.05em",
+          lineHeight: 1,
+        }}
+      >
+        D.
+      </div>
 
-        {submitted ? (
-          <div className="p-4 border border-accent bg-accent/10 text-accent font-mono text-sm uppercase text-center mb-8">
-            // EMAIL SENT ——————————— CHECK INBOX
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="p-3 border border-red-500/50 bg-red-500/10 text-red-500 font-mono text-xs uppercase">
-                // ERROR: {error}
+      <div className="w-full max-w-md relative">
+        <Reveal className="mb-10">
+          <Link href="/" className="font-display font-bold text-white text-xl uppercase tracking-tight">
+            Directioner
+          </Link>
+        </Reveal>
+
+        <div className="rounded-xl p-10" style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}>
+          {/* Yellow top line */}
+          <div className="absolute top-0 left-10 right-10 h-px" style={{ background: "#FFE500", opacity: 0.6 }} />
+
+          <Reveal>
+            <h1 className="font-display font-bold text-white text-3xl uppercase mb-2">Reset Password.</h1>
+            <p className="font-mono text-xs mb-8" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Enter your email and we'll send a reset link.
+            </p>
+          </Reveal>
+
+          {submitted ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-10 text-center"
+            >
+              <div className="text-3xl mb-4">✓</div>
+              <div className="font-mono text-sm font-bold text-white mb-2">Email Sent.</div>
+              <div className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.38)" }}>
+                Check your inbox for the reset link.
               </div>
-            )}
-            <div className="space-y-2">
-              <label className="font-mono text-xs uppercase text-muted-foreground">Account Email</label>
-              <input 
-                type="email" 
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="font-mono text-xs px-4 py-3"
+                  style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.2)", color: "#f43f5e" }}
+                >
+                  {error}
+                </motion.div>
+              )}
+              <Input
+                label="Account Email"
+                type="email"
+                placeholder="admin@server.com"
+                required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                required
-                className="w-full bg-background border border-border p-3 font-mono text-sm text-white focus:outline-none focus:border-primary transition-colors"
-                placeholder="admin@server.com"
               />
-            </div>
-            
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-primary text-black font-mono font-bold px-6 py-4 uppercase text-sm corner-brackets hover:bg-primary/90 transition-colors flex justify-center items-center h-14"
-            >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : "Send Reset Link"}
-            </button>
-          </form>
-        )}
+              <PrimaryBtn type="submit" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border border-black border-t-transparent rounded-full animate-spin" />
+                    Sending…
+                  </span>
+                ) : "Send Reset Link"}
+              </PrimaryBtn>
+            </form>
+          )}
+        </div>
 
-        <div className="mt-8 text-center font-mono text-xs uppercase">
-          <Link href="/login" className="text-muted-foreground hover:text-white transition-colors">
+        <Reveal delay={0.2} className="mt-6 text-center">
+          <Link href="/login"
+            className="font-mono text-xs uppercase tracking-widest transition-colors"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.3)"; }}>
             ← Return to Sign In
           </Link>
-        </div>
+        </Reveal>
       </div>
     </div>
   );

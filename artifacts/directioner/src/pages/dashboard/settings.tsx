@@ -1,59 +1,78 @@
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Eye, EyeOff, Copy, RefreshCw, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+
+const BORDER = "rgba(255,255,255,0.06)";
+const CARD   = "#0f0f12";
+const YELLOW = "#FFE500";
 
 const TABS = ["profile", "security", "notifications", "appearance", "api"] as const;
 type Tab = typeof TABS[number];
 
 const NOTIF_DEFAULTS = {
-  email_alerts: true,
-  usage_warnings: true,
+  email_alerts:     true,
+  usage_warnings:   true,
   billing_receipts: true,
-  weekly_report: false,
-  discord_dm: false,
+  weekly_report:    false,
+  discord_dm:       false,
 };
+
+const NOTIF_DESC: Record<string, string> = {
+  email_alerts:     "Receive critical system alerts via email",
+  usage_warnings:   "Warn when credits drop below 20%",
+  billing_receipts: "Email receipt for every charge",
+  weekly_report:    "Weekly digest of server activity",
+  discord_dm:       "DM you on Discord for urgent alerts",
+};
+
+function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
+  return (
+    <button onClick={onChange}
+      className="relative shrink-0 transition-colors"
+      style={{ width: 44, height: 24, background: on ? YELLOW : "rgba(255,255,255,0.08)", border: `1px solid ${on ? YELLOW : BORDER}` }}>
+      <div className="absolute top-1 w-4 h-4 transition-all"
+        style={{ left: on ? "calc(100% - 20px)" : 4, background: on ? "#000" : "rgba(255,255,255,0.4)" }} />
+    </button>
+  );
+}
 
 export default function Settings() {
   usePageTitle("Settings");
   const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [username, setUsername] = useState(user?.username ?? '');
-  const [password, setPassword] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [notifs, setNotifs] = useState(NOTIF_DEFAULTS);
+  const [saving, setSaving]       = useState(false);
+  const [saved, setSaved]         = useState(false);
+  const [username, setUsername]   = useState(user?.username ?? "");
+  const [password, setPassword]   = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showPw, setShowPw]       = useState(false);
+  const [notifs, setNotifs]       = useState(NOTIF_DEFAULTS);
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
-  const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const MOCK_API_KEY = `dk_${user?.id?.slice(0,8) ?? 'xxxxxxxx'}xxxxxxxxxxxxxxxxxxx`;
+  const [apiKeyCopied,  setApiKeyCopied]  = useState(false);
+  const MOCK_API_KEY = `dk_${user?.id?.slice(0, 8) ?? "xxxxxxxx"}xxxxxxxxxxxxxxxxxxx`;
 
-  useEffect(() => { setUsername(user?.username ?? ''); }, [user]);
+  useEffect(() => { setUsername(user?.username ?? ""); }, [user]);
 
   const getStrength = (p: string) => {
     let s = 0;
-    if (p.length > 7) s += 25;
-    if (/[A-Z]/.test(p)) s += 25;
-    if (/[0-9]/.test(p)) s += 25;
-    if (/[^A-Za-z0-9]/.test(p)) s += 25;
+    if (p.length > 7)             s += 25;
+    if (/[A-Z]/.test(p))          s += 25;
+    if (/[0-9]/.test(p))          s += 25;
+    if (/[^A-Za-z0-9]/.test(p))   s += 25;
     return s;
   };
   const strength = getStrength(password);
-  const strengthColor = strength < 50 ? 'bg-red-500' : strength < 75 ? 'bg-orange-400' : 'bg-accent';
-  const strengthLabel = strength < 25 ? 'Weak' : strength < 50 ? 'Fair' : strength < 75 ? 'Good' : 'Strong';
+  const strengthColor = strength < 50 ? "#f43f5e" : strength < 75 ? "#f97316" : "#10b981";
+  const strengthLabel = strength < 25 ? "Weak" : strength < 50 ? "Fair" : strength < 75 ? "Good" : "Strong";
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    try {
-      await updateProfile({ username: username.trim() });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch {}
-    setSaving(false);
+    try { await updateProfile({ username: username.trim() }); setSaved(true); setTimeout(() => setSaved(false), 2500); }
+    catch {} finally { setSaving(false); }
   };
 
   const handleSavePassword = async (e: React.FormEvent) => {
@@ -62,210 +81,303 @@ export default function Settings() {
     setSaving(true);
     try {
       await supabase.auth.updateUser({ password });
-      setPassword(''); setConfirmPw('');
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch {}
-    setSaving(false);
+      setPassword(""); setConfirmPw("");
+      setSaved(true); setTimeout(() => setSaved(false), 2500);
+    } catch {} finally { setSaving(false); }
   };
 
   const copyApiKey = () => {
     navigator.clipboard.writeText(MOCK_API_KEY);
-    setApiKeyCopied(true);
-    setTimeout(() => setApiKeyCopied(false), 2000);
+    setApiKeyCopied(true); setTimeout(() => setApiKeyCopied(false), 2000);
   };
+
+  const fieldCls = "w-full px-4 py-3 font-mono text-sm text-white focus:outline-none transition-colors";
+  const fieldStyle = { background: "#070708", border: "1px solid rgba(255,255,255,0.08)" };
 
   return (
     <div className="space-y-8 pb-12">
-      <header className="border-b border-border pb-6">
-        <h1 className="text-3xl font-display font-bold uppercase mb-2 text-white">Account Settings.</h1>
-        <p className="font-mono text-xs text-muted-foreground uppercase">User ID: {user?.id}</p>
+      <header className="pb-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] mb-2"
+          style={{ color: "rgba(255,255,255,0.25)" }}>ACCOUNT SETTINGS</div>
+        <h1 className="font-display font-bold text-white leading-none"
+          style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em" }}>
+          Settings.
+        </h1>
+        <div className="font-mono text-[10px] mt-2" style={{ color: "rgba(255,255,255,0.2)" }}>
+          ID: {user?.id}
+        </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-8 pt-2">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Tab nav */}
-        <div className="w-full lg:w-48 shrink-0 border-b lg:border-b-0 lg:border-r border-border pb-4 lg:pb-0 lg:pr-4">
-          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible hide-scrollbar">
+        <div className="w-full lg:w-44 shrink-0">
+          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
             {TABS.map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={cn("shrink-0 text-left px-4 py-3 font-mono text-xs uppercase transition-colors",
-                  activeTab === tab ? "bg-primary text-black font-bold" : "text-muted-foreground hover:text-white"
-                )}>
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="relative shrink-0 text-left px-4 py-2.5 font-mono text-xs uppercase tracking-wide transition-all"
+                style={{
+                  color: activeTab === tab ? YELLOW : "rgba(255,255,255,0.38)",
+                  background: activeTab === tab ? "rgba(255,229,0,0.06)" : "transparent",
+                  borderLeft: activeTab === tab ? `2px solid ${YELLOW}` : "2px solid transparent",
+                }}
+              >
                 {tab}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Tab content */}
         <div className="flex-1 max-w-2xl">
-          {/* Profile */}
-          {activeTab === "profile" && (
-            <form onSubmit={handleSaveProfile} className="space-y-6 border border-border bg-card p-8">
-              <h2 className="font-mono text-primary font-bold uppercase text-xs pb-2 border-b border-border">// Profile Config</h2>
-              <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-secondary flex items-center justify-center font-display font-black text-3xl border border-border text-white shrink-0">
-                  {user?.username.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <div className="font-mono text-xs text-muted-foreground mb-1 uppercase">Display Initials</div>
-                  <div className="font-mono text-sm text-primary">{user?.tier.toUpperCase()} Plan</div>
-                </div>
-              </div>
-              <div>
-                <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">Username</label>
-                <input value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-background border border-border px-4 py-3 font-mono text-sm focus:outline-none focus:border-primary transition-colors" />
-              </div>
-              <div>
-                <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">Email</label>
-                <input value={user?.email} readOnly className="w-full bg-background border border-border px-4 py-3 font-mono text-sm text-muted-foreground cursor-not-allowed" />
-                <div className="font-mono text-[10px] text-muted-foreground mt-1">Email cannot be changed directly. Contact support.</div>
-              </div>
-              <div>
-                <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">Member Since</label>
-                <div className="font-mono text-sm text-muted-foreground">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</div>
-              </div>
-              <button type="submit" disabled={saving} className="bg-primary text-black font-mono font-bold px-8 py-3 uppercase text-xs corner-brackets hover:bg-white transition-colors flex items-center gap-2">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
-                {saved ? 'Saved!' : 'Save Changes'}
-              </button>
-            </form>
-          )}
-
-          {/* Security */}
-          {activeTab === "security" && (
-            <form onSubmit={handleSavePassword} className="space-y-6 border border-border bg-card p-8">
-              <h2 className="font-mono text-primary font-bold uppercase text-xs pb-2 border-b border-border">// Security Config</h2>
-              <div>
-                <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">New Password</label>
-                <div className="relative">
-                  <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-background border border-border px-4 py-3 pr-12 font-mono text-sm focus:outline-none focus:border-primary" />
-                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-                {password && (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex gap-1">
-                      {[25,50,75,100].map(v => (
-                        <div key={v} className={cn("flex-1 h-1 transition-colors", strength >= v ? strengthColor : "bg-border")} />
-                      ))}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* PROFILE */}
+              {activeTab === "profile" && (
+                <form onSubmit={handleSaveProfile} className="space-y-5 p-8 rounded-xl"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] pb-3 mb-2"
+                    style={{ color: YELLOW, borderBottom: `1px solid ${BORDER}` }}>
+                    Profile Config
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 flex items-center justify-center font-display font-black text-2xl shrink-0"
+                      style={{ background: "rgba(255,229,0,0.1)", border: `2px solid rgba(255,229,0,0.25)`, color: YELLOW }}>
+                      {user?.username?.charAt(0).toUpperCase()}
                     </div>
-                    <div className={cn("font-mono text-[10px] uppercase", strengthColor.replace('bg-','text-'))}>{strengthLabel}</div>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">Confirm Password</label>
-                <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} className={cn("w-full bg-background border px-4 py-3 font-mono text-sm focus:outline-none focus:border-primary", confirmPw && confirmPw !== password ? "border-red-500" : "border-border")} />
-                {confirmPw && confirmPw !== password && <div className="font-mono text-[10px] text-red-500 mt-1">Passwords don't match</div>}
-              </div>
-              <div className="border border-border bg-background p-4">
-                <div className="font-mono text-xs text-muted-foreground uppercase mb-2">Two-Factor Authentication</div>
-                <div className="font-mono text-sm text-white mb-3">Not configured</div>
-                <button type="button" className="font-mono text-xs text-primary hover:underline uppercase">Set up 2FA →</button>
-              </div>
-              <button type="submit" disabled={saving || !password || password !== confirmPw} className="bg-primary text-black font-mono font-bold px-8 py-3 uppercase text-xs corner-brackets hover:bg-white transition-colors disabled:opacity-40 flex items-center gap-2">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : null}
-                Update Password
-              </button>
-            </form>
-          )}
-
-          {/* Notifications */}
-          {activeTab === "notifications" && (
-            <div className="border border-border bg-card p-8 space-y-6">
-              <h2 className="font-mono text-primary font-bold uppercase text-xs pb-2 border-b border-border">// Notification Config</h2>
-              {Object.entries(notifs).map(([key, val]) => (
-                <div key={key} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div>
-                    <div className="font-mono text-sm text-white capitalize">{key.replace(/_/g, ' ')}</div>
-                    <div className="font-mono text-[10px] text-muted-foreground uppercase mt-0.5">
-                      {key === 'email_alerts' ? 'Receive critical system alerts via email' :
-                       key === 'usage_warnings' ? 'Warn when credits drop below 20%' :
-                       key === 'billing_receipts' ? 'Email receipt for every charge' :
-                       key === 'weekly_report' ? 'Weekly digest of server activity' :
-                       'DM you on Discord for urgent alerts'}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setNotifs(p => ({ ...p, [key]: !val }))}
-                    className={cn("relative w-12 h-6 border transition-colors shrink-0", val ? "bg-primary border-primary" : "bg-background border-border")}
-                  >
-                    <div className={cn("absolute top-1 w-4 h-4 bg-black transition-all", val ? "left-7" : "left-1")} />
-                  </button>
-                </div>
-              ))}
-              <button className="bg-primary text-black font-mono font-bold px-8 py-3 uppercase text-xs corner-brackets hover:bg-white transition-colors">
-                Save Preferences
-              </button>
-            </div>
-          )}
-
-          {/* Appearance */}
-          {activeTab === "appearance" && (
-            <div className="border border-border bg-card p-8 space-y-6">
-              <h2 className="font-mono text-primary font-bold uppercase text-xs pb-2 border-b border-border">// Appearance Config</h2>
-              {[
-                { label: "Theme", options: ["Dark (required)", "Dark High Contrast"], current: 0 },
-                { label: "UI Density", options: ["Comfortable", "Compact", "Cozy"], current: 0 },
-                { label: "Date Format", options: ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"], current: 2 },
-                { label: "Timezone", options: ["UTC", "UTC-5 (EST)", "UTC+1 (CET)", "UTC+5:30 (IST)"], current: 0 },
-              ].map(s => (
-                <div key={s.label}>
-                  <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">{s.label}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {s.options.map((o, i) => (
-                      <button key={o} className={cn("px-4 py-2 font-mono text-xs border transition-colors", i === s.current ? "bg-primary text-black border-primary" : "border-border text-muted-foreground hover:text-white hover:border-white/20")}>
-                        {o}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* API */}
-          {activeTab === "api" && (
-            <div className="border border-border bg-card p-8 space-y-6">
-              <h2 className="font-mono text-primary font-bold uppercase text-xs pb-2 border-b border-border">// API Access</h2>
-              {user?.tier !== 'max' ? (
-                <div className="border border-border bg-background p-8 text-center">
-                  <div className="font-mono text-xs text-muted-foreground uppercase mb-4">API Access requires Max tier</div>
-                  <a href="/dashboard/billing" className="bg-primary text-black font-mono text-xs font-bold uppercase px-6 py-3 corner-brackets hover:bg-white transition-colors inline-block">
-                    Upgrade to Max
-                  </a>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="font-mono text-xs uppercase text-muted-foreground block mb-2">API Key</label>
-                    <div className="flex gap-2">
-                      <div className="flex-1 bg-background border border-border px-4 py-3 font-mono text-xs text-muted-foreground overflow-hidden">
-                        {apiKeyVisible ? MOCK_API_KEY : '•'.repeat(40)}
+                    <div>
+                      <div className="font-mono text-xs text-white">{user?.username}</div>
+                      <div className="font-mono text-[9px] uppercase tracking-widest mt-1 px-2 py-0.5 inline-block"
+                        style={{ background: "rgba(255,229,0,0.1)", border: "1px solid rgba(255,229,0,0.2)", color: YELLOW }}>
+                        {user?.tier} Plan
                       </div>
-                      <button onClick={() => setApiKeyVisible(!apiKeyVisible)} className="border border-border px-3 text-muted-foreground hover:text-white transition-colors">
-                        {apiKeyVisible ? <EyeOff size={14} /> : <Eye size={14} />}
-                      </button>
-                      <button onClick={copyApiKey} className="border border-border px-3 text-muted-foreground hover:text-primary transition-colors">
-                        {apiKeyCopied ? <Check size={14} className="text-accent" /> : <Copy size={14} />}
-                      </button>
                     </div>
                   </div>
-                  <button className="border border-border text-muted-foreground hover:text-white px-6 py-2 font-mono text-xs uppercase transition-colors flex items-center gap-2">
-                    <RefreshCw size={12} /> Regenerate Key
+                  {[
+                    { label: "Username", field: <input value={username} onChange={e => setUsername(e.target.value)} className={fieldCls} style={fieldStyle} onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }} onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }} /> },
+                    { label: "Email",    field: <input value={user?.email} readOnly className={fieldCls} style={{ ...fieldStyle, cursor: "not-allowed", color: "rgba(255,255,255,0.35)" }} /> },
+                    { label: "Member Since", field: <div className="font-mono text-sm py-3 px-4" style={{ color: "rgba(255,255,255,0.5)" }}>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</div> },
+                  ].map(({ label, field }) => (
+                    <div key={label}>
+                      <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
+                        style={{ color: "rgba(255,255,255,0.35)" }}>{label}</label>
+                      {field}
+                    </div>
+                  ))}
+                  <button type="submit" disabled={saving}
+                    className="flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3 transition-all disabled:opacity-50"
+                    style={{ background: YELLOW, color: "#000" }}>
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+                    {saved ? "Saved!" : "Save Changes"}
                   </button>
-                </>
+                </form>
               )}
-              <div className="border border-border bg-blueprint/40 p-4">
-                <div className="font-mono text-xs text-primary uppercase mb-2">// Quick Start</div>
-                <pre className="font-mono text-[10px] text-muted-foreground overflow-x-auto">{`curl https://api.directioner.bot/v1/chat \\
+
+              {/* SECURITY */}
+              {activeTab === "security" && (
+                <form onSubmit={handleSavePassword} className="space-y-5 p-8 rounded-xl"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] pb-3 mb-2"
+                    style={{ color: YELLOW, borderBottom: `1px solid ${BORDER}` }}>
+                    Security Config
+                  </div>
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
+                      style={{ color: "rgba(255,255,255,0.35)" }}>New Password</label>
+                    <div className="relative">
+                      <input type={showPw ? "text" : "password"} value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className={`${fieldCls} pr-12`} style={fieldStyle}
+                        onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }} />
+                      <button type="button" onClick={() => setShowPw(!showPw)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                        style={{ color: "rgba(255,255,255,0.35)" }}>
+                        {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                    {password && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex gap-1">
+                          {[25, 50, 75, 100].map(v => (
+                            <div key={v} className="flex-1 h-0.5 transition-colors"
+                              style={{ background: strength >= v ? strengthColor : "rgba(255,255,255,0.06)" }} />
+                          ))}
+                        </div>
+                        <div className="font-mono text-[9px] uppercase tracking-widest" style={{ color: strengthColor }}>
+                          {strengthLabel}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
+                      style={{ color: "rgba(255,255,255,0.35)" }}>Confirm Password</label>
+                    <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
+                      className={fieldCls}
+                      style={{ ...fieldStyle, borderColor: confirmPw && confirmPw !== password ? "#f43f5e" : "rgba(255,255,255,0.08)" }}
+                      onFocus={e => { if (!confirmPw || confirmPw === password) e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = confirmPw && confirmPw !== password ? "#f43f5e" : "rgba(255,255,255,0.08)"; }} />
+                    {confirmPw && confirmPw !== password && (
+                      <div className="font-mono text-[9px] mt-1" style={{ color: "#f43f5e" }}>Passwords don't match</div>
+                    )}
+                  </div>
+                  <div className="p-5 rounded-lg" style={{ background: "#070708", border: `1px solid ${BORDER}` }}>
+                    <div className="font-mono text-[10px] uppercase tracking-widest mb-2"
+                      style={{ color: "rgba(255,255,255,0.3)" }}>Two-Factor Authentication</div>
+                    <div className="font-mono text-sm text-white mb-3">Not configured</div>
+                    <button type="button" className="font-mono text-xs uppercase tracking-wide transition-colors"
+                      style={{ color: YELLOW }}>
+                      Set up 2FA →
+                    </button>
+                  </div>
+                  <button type="submit" disabled={saving || !password || password !== confirmPw}
+                    className="flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3 transition-all disabled:opacity-40"
+                    style={{ background: YELLOW, color: "#000" }}>
+                    {saving && <Loader2 size={14} className="animate-spin" />}
+                    Update Password
+                  </button>
+                </form>
+              )}
+
+              {/* NOTIFICATIONS */}
+              {activeTab === "notifications" && (
+                <div className="p-8 rounded-xl space-y-1"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] pb-3 mb-5"
+                    style={{ color: YELLOW, borderBottom: `1px solid ${BORDER}` }}>
+                    Notification Config
+                  </div>
+                  {Object.entries(notifs).map(([key, val]) => (
+                    <div key={key}
+                      className="flex items-center justify-between py-4"
+                      style={{ borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
+                      <div>
+                        <div className="font-mono text-sm text-white capitalize mb-0.5">
+                          {key.replace(/_/g, " ")}
+                        </div>
+                        <div className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          {NOTIF_DESC[key]}
+                        </div>
+                      </div>
+                      <Toggle on={val} onChange={() => setNotifs(p => ({ ...p, [key]: !val }))} />
+                    </div>
+                  ))}
+                  <div className="pt-4">
+                    <button className="font-mono font-bold text-sm uppercase tracking-wide px-7 py-3 transition-all"
+                      style={{ background: YELLOW, color: "#000" }}>
+                      Save Preferences
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* APPEARANCE */}
+              {activeTab === "appearance" && (
+                <div className="p-8 rounded-xl space-y-6"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] pb-3"
+                    style={{ color: YELLOW, borderBottom: `1px solid ${BORDER}` }}>
+                    Appearance Config
+                  </div>
+                  {[
+                    { label: "Theme",       options: ["Dark (required)", "Dark High Contrast"], current: 0 },
+                    { label: "UI Density",  options: ["Comfortable", "Compact", "Cozy"],        current: 0 },
+                    { label: "Date Format", options: ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"], current: 2 },
+                    { label: "Timezone",    options: ["UTC", "UTC-5 (EST)", "UTC+1 (CET)", "UTC+5:30 (IST)"], current: 0 },
+                  ].map(s => (
+                    <div key={s.label}>
+                      <label className="font-mono text-[10px] uppercase tracking-widest block mb-3"
+                        style={{ color: "rgba(255,255,255,0.35)" }}>{s.label}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {s.options.map((o, i) => (
+                          <button key={o}
+                            className="px-4 py-2 font-mono text-xs transition-all"
+                            style={i === s.current
+                              ? { background: YELLOW, color: "#000", fontWeight: "bold" }
+                              : { border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.4)" }}>
+                            {o}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* API */}
+              {activeTab === "api" && (
+                <div className="p-8 rounded-xl space-y-6"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] pb-3"
+                    style={{ color: YELLOW, borderBottom: `1px solid ${BORDER}` }}>
+                    API Access
+                  </div>
+                  {user?.tier !== "max" ? (
+                    <div className="py-12 text-center rounded-lg"
+                      style={{ border: `1px dashed ${BORDER}` }}>
+                      <div className="font-mono text-xs uppercase mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        API access requires Max tier
+                      </div>
+                      <a href="/dashboard/billing"
+                        className="inline-block font-mono font-bold text-sm uppercase tracking-wide px-6 py-3"
+                        style={{ background: YELLOW, color: "#000" }}>
+                        Upgrade to Max
+                      </a>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
+                          style={{ color: "rgba(255,255,255,0.35)" }}>API Key</label>
+                        <div className="flex gap-2">
+                          <div className="flex-1 px-4 py-3 font-mono text-xs overflow-hidden"
+                            style={{ background: "#070708", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.4)" }}>
+                            {apiKeyVisible ? MOCK_API_KEY : "•".repeat(40)}
+                          </div>
+                          <button onClick={() => setApiKeyVisible(!apiKeyVisible)}
+                            className="px-3 transition-colors"
+                            style={{ border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.4)" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)"; }}>
+                            {apiKeyVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                          <button onClick={copyApiKey}
+                            className="px-3 transition-colors"
+                            style={{ border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.4)" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = YELLOW; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)"; }}>
+                            {apiKeyCopied ? <Check size={14} style={{ color: "#10b981" }} /> : <Copy size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      <button className="flex items-center gap-2 font-mono text-xs uppercase px-5 py-2 transition-all"
+                        style={{ border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.4)" }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.25)"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)"; }}>
+                        <RefreshCw size={12} /> Regenerate Key
+                      </button>
+                    </>
+                  )}
+                  <div className="p-5 rounded-lg" style={{ background: "#070708", border: `1px solid ${BORDER}` }}>
+                    <div className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color: YELLOW }}>Quick Start</div>
+                    <pre className="font-mono text-[10px] leading-relaxed overflow-x-auto"
+                      style={{ color: "rgba(255,255,255,0.45)" }}>{`curl https://api.directioner.bot/v1/chat \\
   -H "Authorization: Bearer dk_..." \\
   -H "Content-Type: application/json" \\
   -d '{"server_id":"...", "message":"Hello!"}'`}</pre>
-              </div>
-            </div>
-          )}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
