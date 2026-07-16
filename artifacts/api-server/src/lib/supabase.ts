@@ -1,14 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { env } from "./env";
 
-const supabaseUrl = process.env["VITE_SUPABASE_URL"];
-const supabaseAnonKey = process.env["VITE_SUPABASE_ANON_KEY"];
+let supabaseInstance: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set for JWT verification",
-  );
+if (env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY) {
+  supabaseInstance = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: { persistSession: false },
-});
+export const supabase = supabaseInstance;
+export const supabaseConfigured = supabaseInstance !== null;

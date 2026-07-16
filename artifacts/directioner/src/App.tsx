@@ -21,6 +21,7 @@ import Explore from '@/pages/explore';
 import FAQ from '@/pages/faq';
 import About from '@/pages/about';
 import Contact from '@/pages/contact';
+import Docs from '@/pages/docs';
 
 import DashboardIndex from '@/pages/dashboard/index';
 import Bots from '@/pages/dashboard/bots';
@@ -89,6 +90,7 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/contact" component={Contact} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/docs" component={Docs} />
 
         {/* Auth Routes */}
         <Route path="/login" component={Login} />

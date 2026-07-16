@@ -3,6 +3,10 @@ import { Link } from "wouter";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { CountUpNumber } from "@/hooks/CountUpNumber";
 import { EqualizerBars, MagneticElement } from "@/components/animations";
+import { BorderBeam } from "@/components/animations/BorderBeam";
+import { TiltCard } from "@/components/animations/TiltCard";
+import { TextScramble } from "@/components/animations/TextScramble";
+import { useAuth } from "@/lib/auth";
 import {
   motion,
   useInView,
@@ -11,35 +15,10 @@ import {
   useSpring,
   AnimatePresence,
 } from "framer-motion";
-import {
-  ArrowUpRight,
-  ChevronRight,
-  Mic,
-  MessageSquare,
-  Database,
-  Sparkles,
-  Brain,
-  Zap,
-  Shield,
-  Globe2,
-} from "lucide-react";
+import { ArrowUpRight, Mic } from "lucide-react";
 
-/* ─── Helpers ─────────────────────────────────────────────────────── */
+/* ─── Local animation helpers ────────────────────────────────────────── */
 
-function useMousePosition(ref: React.RefObject<HTMLElement | null>) {
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const onMove = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
-      const rect = ref.current?.getBoundingClientRect();
-      if (!rect) return;
-      setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    },
-    [ref]
-  );
-  return { pos, onMove };
-}
-
-/** Splits text into words, reveals each word sliding up from below */
 function SplitReveal({
   text,
   className,
@@ -80,7 +59,6 @@ function SplitReveal({
   );
 }
 
-/** Fade + slide up wrapper */
 function Reveal({
   children,
   className,
@@ -107,7 +85,6 @@ function Reveal({
   );
 }
 
-/** Thin horizontal line that draws across on enter */
 function DrawLine({ delay = 0 }: { delay?: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
@@ -123,7 +100,6 @@ function DrawLine({ delay = 0 }: { delay?: number }) {
   );
 }
 
-/** Infinite horizontal ticker — two independent rows for testimonials */
 function InfiniteRow({
   items,
   speed = 35,
@@ -149,7 +125,8 @@ function InfiniteRow({
   );
 }
 
-/** Animated live chat terminal */
+/* ─── LiveChat (verbatim from original) ─────────────────────────────── */
+
 const chatLines = [
   { role: "user", text: "@Directioner what's the best FPS for beginners?" },
   { role: "bot", text: "Based on your server's history: Valorant! You and 14 others have mentioned it. Want tips?" },
@@ -283,66 +260,49 @@ function LiveChat() {
   );
 }
 
-/** Animated memory graph */
+/* ─── MemoryGraph ────────────────────────────────────────────────────── */
+
 function MemoryGraph() {
   const nodes = [
-    { x: 50, y: 50, label: "USER", color: "#FFE500" },
-    { x: 200, y: 30, label: "MEMORY", color: "#6366f1" },
-    { x: 320, y: 80, label: "SERVER", color: "#10b981" },
+    { x: 50,  y: 50,  label: "USER",    color: "#FFE500" },
+    { x: 200, y: 30,  label: "MEMORY",  color: "#6366f1" },
+    { x: 320, y: 80,  label: "SERVER",  color: "#10b981" },
     { x: 150, y: 150, label: "CONTEXT", color: "#f43f5e" },
-    { x: 270, y: 160, label: "GLOBAL", color: "#6366f1" },
+    { x: 270, y: 160, label: "GLOBAL",  color: "#6366f1" },
   ];
-  const edges = [
-    [0, 1], [1, 2], [0, 3], [1, 4], [3, 4], [2, 4],
-  ];
+  const edges = [[0,1],[1,2],[0,3],[1,4],[3,4],[2,4]];
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <div
-      ref={ref}
-      className="relative bg-[#0c0c0e] border border-white/[0.06] rounded-lg overflow-hidden p-6"
-    >
-      <div className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-4">
+    <div ref={ref} className="relative w-full">
+      <div className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-3">
         Memory Node Graph — Live
       </div>
-      <svg viewBox="0 0 380 200" className="w-full h-48">
-        {/* Edges */}
+      <svg viewBox="0 0 380 200" className="w-full h-40">
         {edges.map(([a, b], i) => (
           <motion.line
             key={i}
-            x1={nodes[a].x}
-            y1={nodes[a].y}
-            x2={nodes[b].x}
-            y2={nodes[b].y}
-            stroke="rgba(255,255,255,0.08)"
-            strokeWidth="1"
+            x1={nodes[a].x} y1={nodes[a].y}
+            x2={nodes[b].x} y2={nodes[b].y}
+            stroke="rgba(255,255,255,0.08)" strokeWidth="1"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={inView ? { pathLength: 1, opacity: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.3 + i * 0.12, ease: "easeOut" }}
           />
         ))}
-        {/* Nodes */}
         {nodes.map((n, i) => (
           <motion.g key={i}>
             <motion.circle
-              cx={n.x}
-              cy={n.y}
-              r="12"
-              fill={`${n.color}18`}
-              stroke={n.color}
-              strokeWidth="1.5"
+              cx={n.x} cy={n.y} r="12"
+              fill={`${n.color}18`} stroke={n.color} strokeWidth="1.5"
               initial={{ scale: 0, opacity: 0 }}
               animate={inView ? { scale: 1, opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
             />
             <motion.text
-              x={n.x}
-              y={n.y + 26}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.4)"
-              fontSize="7"
-              fontFamily="JetBrains Mono"
+              x={n.x} y={n.y + 26} textAnchor="middle"
+              fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="JetBrains Mono"
               initial={{ opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
               transition={{ delay: 0.5 + i * 0.1 }}
@@ -351,24 +311,14 @@ function MemoryGraph() {
             </motion.text>
           </motion.g>
         ))}
-        {/* Pulse rings */}
         {nodes.map((n, i) => (
           <motion.circle
             key={`pulse-${i}`}
-            cx={n.x}
-            cy={n.y}
-            r="12"
-            fill="none"
-            stroke={n.color}
-            strokeWidth="1"
+            cx={n.x} cy={n.y} r="12"
+            fill="none" stroke={n.color} strokeWidth="1"
             initial={{ scale: 1, opacity: 0.4 }}
             animate={{ scale: 2.2, opacity: 0 }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: i * 0.4,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
           />
         ))}
       </svg>
@@ -376,89 +326,215 @@ function MemoryGraph() {
   );
 }
 
-/* ─── Main page ────────────────────────────────────────────────────── */
+/* ─── Sparkline ──────────────────────────────────────────────────────── */
 
-const discordTiles = [
-  { emoji: "🤖", label: "AI Engine", bg: "#1a1a2e", accent: "#6366f1", rotClass: "animate-float-a", rot: "-3deg" },
-  { emoji: "🧠", label: "Memory",    bg: "#120e1e", accent: "#a855f7", rotClass: "animate-float-b", rot:  "2deg"  },
-  { emoji: "🎙️", label: "Voice",     bg: "#0f1c2e", accent: "#0ea5e9", rotClass: "animate-float-c", rot: "-1deg" },
-  { emoji: "⚡",  label: "Speed",     bg: "#1a1a2e", accent: "#FFE500", rotClass: "animate-float-d", rot:  "3deg"  },
+function Sparkline() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const points = [0,18,10,34,22,48,30,55,40,62,50,58,60,72,70,68,80,80,90,75,100,88];
+  const max = Math.max(...points.filter((_, i) => i % 2 === 1));
+  const pathD = points
+    .reduce((acc, val, i) => {
+      if (i % 2 === 0) return acc + (i === 0 ? `M` : ` L`) + ` ${val * 2},`;
+      return acc + `${100 - (val / max) * 80} `;
+    }, "")
+    .trim();
+
+  return (
+    <div ref={ref} className="w-full">
+      <svg viewBox="0 0 220 100" className="w-full h-20" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFE500" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#FFE500" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <motion.path
+          d={`${pathD} L 200,100 L 0,100 Z`}
+          fill="url(#spark-grad)"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.3 }}
+        />
+        <motion.path
+          d={pathD}
+          fill="none"
+          stroke="#FFE500"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0 }}
+          animate={inView ? { pathLength: 1 } : {}}
+          transition={{ duration: 1.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+/* ─── Personalities list data ────────────────────────────────────────── */
+
+const allPersonalities = [
+  { cat: "Education",   names: ["/mentor", "/tutor", "/coach", "/interviewer"] },
+  { cat: "Tech",        names: ["/coder", "/debugger", "/architect", "/analyst"] },
+  { cat: "Creative",    names: ["/writer", "/poet", "/storyteller", "/creative"] },
+  { cat: "Lifestyle",   names: ["/chef", "/trainer", "/therapist", "/advisor"] },
+  { cat: "Knowledge",   names: ["/scientist", "/historian", "/philosopher", "/lawyer"] },
+  { cat: "Fun",         names: ["/comedian", "/chaos", "/debate", "/roast"] },
+  { cat: "Productivity",names: ["/planner", "/productivity", "/brainstorm"] },
 ];
 
-const modes = [
-  { cmd: "/chat",     desc: "Default conversational AI. Natural, helpful, context-aware.", icon: MessageSquare, color: "#FFE500" },
-  { cmd: "/tutor",    desc: "Patient educational mode. Adapts to any subject or skill level.", icon: Brain, color: "#6366f1" },
-  { cmd: "/coder",    desc: "Development-focused. Code review, debugging, 15+ languages.", icon: Zap, color: "#FFE500" },
-  { cmd: "/chaos",    desc: "Unpredictable, hilarious, always entertaining. For fun servers.", icon: Sparkles, color: "#f43f5e" },
-  { cmd: "/creative", desc: "Storytelling, brainstorming, script writing, world-building.", icon: Globe2, color: "#10b981" },
-  { cmd: "/debate",   desc: "Devil's advocate mode. Challenges assumptions, sparks discussion.", icon: Shield, color: "#6366f1" },
-];
+function PersonalityList() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setActiveIdx(i => (i + 1) % allPersonalities.length), 1800);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="space-y-2">
+      {allPersonalities.map((cat, ci) => (
+        <motion.div
+          key={cat.cat}
+          animate={{ opacity: ci === activeIdx ? 1 : 0.35 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center gap-3"
+        >
+          <span className="font-mono text-[9px] uppercase tracking-widest text-white/30 w-20 shrink-0">
+            {cat.cat}
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {cat.names.map((n) => (
+              <motion.span
+                key={n}
+                animate={{ color: ci === activeIdx ? "#FFE500" : "rgba(255,255,255,0.3)" }}
+                transition={{ duration: 0.4 }}
+                className="font-mono text-[11px]"
+              >
+                {n}
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Testimonial data ───────────────────────────────────────────────── */
 
 const testimonials = [
-  { q: "Directioner coordinates our raids so we don't have to.", u: "@GamingKing_X", s: "Gaming Hub",    members: "12k" },
-  { q: "The /tutor mode helped our whole server ace finals.",     u: "@StudyPro",     s: "CS 101 Group", members: "4k"  },
-  { q: "Like having a senior dev in the channel 24/7.",           u: "@CodeNinja",    s: "DevCommunity", members: "8k"  },
-  { q: "We run /chaos on Friday nights. Absolutely hilarious.",   u: "@FridayCrew",   s: "The Lounge",   members: "2k"  },
-  { q: "Scaled our 10k server without hiring extra mods.",        u: "@ServerAdmin",  s: "Anime Central",members: "10k" },
-  { q: "Retention went from 30% to 70% in one month.",           u: "@CommunityMgr", s: "Creator Space",members: "6k"  },
+  { q: "Finally an AI that knows my server's inside jokes", u: "@rafaelxd",   s: "Gaming Hub",     members: "1.2k" },
+  { q: "The tutor mode helped 40 of my students pass their CS exam", u: "@prof_smith", s: "Study Central", members: "3.4k" },
+  { q: "Replaced 3 bots with just Directioner", u: "@devkid",    s: "Dev Syndicate", members: "8.1k" },
+  { q: "Our server engagement tripled in 2 weeks", u: "@admin_kai",  s: "Anime Central",  members: "22k"  },
+  { q: "/chaos mode on Friday night is an institution", u: "@friday_crew", s: "The Lounge",    members: "5.5k" },
+  { q: "Like having a senior dev on call 24/7", u: "@codeninja",  s: "DevCommunity",  members: "11k"  },
+  { q: "Retention went from 30% to 70% in one month", u: "@commgr",    s: "Creator Space",  members: "6k"   },
+  { q: "Scaled to 20k members without extra mods", u: "@serverking", s: "Crypto Alpha",   members: "20k"  },
 ];
 
+const testimonials2 = [
+  { q: "Best Discord bot I've ever used, period", u: "@jessica_rv",  s: "Art & Design Hub", members: "2.1k" },
+  { q: "The memory feature blew my mind — it remembered my project preferences from 3 weeks ago", u: "@pm_zach",   s: "PMers Collective", members: "4.7k" },
+  { q: "Debate mode has sparked the best convos in our server", u: "@philclub",  s: "Philosophy Hub",  members: "900"  },
+  { q: "My students love the /tutor slash command", u: "@drmartin",  s: "CS Department",   members: "1.8k" },
+  { q: "Replaced our entire moderation + info bot stack", u: "@nightmode",  s: "Night Owls",     members: "15k"  },
+  { q: "The voice mode is next level — real time, no lag", u: "@voicefan",  s: "Podcast Crew",   members: "3.3k" },
+];
+
+/* ─── Main page ──────────────────────────────────────────────────────── */
+
 export default function Home() {
-  usePageTitle("Production-Grade AI for Discord");
+  usePageTitle("AI for Discord");
+  const { user } = useAuth();
 
   const heroRef = useRef<HTMLElement>(null);
-  const { pos, onMove } = useMousePosition(heroRef);
   const { scrollY } = useScroll();
-
-  const heroY       = useTransform(scrollY, [0, 700], [0, -110]);
-  const tileY       = useTransform(scrollY, [0, 700], [0,  -60]);
-  const bgY         = useTransform(scrollY, [0, 700], [0,  -40]);
   const heroOpacity = useTransform(scrollY, [0, 420], [1, 0]);
-  const bgScale     = useTransform(scrollY, [0, 700], [1, 1.06]);
+  const heroY = useTransform(scrollY, [0, 700], [0, -80]);
 
-  const springX = useSpring(pos.x, { stiffness: 80, damping: 20 });
-  const springY = useSpring(pos.y, { stiffness: 80, damping: 20 });
+  /* bento cards hover state */
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+  /* bento ref for inView */
+  const bentoRef = useRef(null);
+  const bentoInView = useInView(bentoRef, { once: true, margin: "-100px" });
+
+  const statsRef = useRef(null);
+  const stepsRef = useRef(null);
 
   return (
     <div className="overflow-hidden" style={{ background: "#070708" }}>
 
-      {/* ══════════════════════════════════════════════════════════ HERO */}
+      {/* ═══════════════════════════════════════════════════════ HERO */}
       <section
         ref={heroRef}
-        onMouseMove={onMove}
         className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       >
-        {/* Layered gradient bg — Solreader depth + Resend glow */}
-        <motion.div style={{ scale: bgScale, y: bgY }} className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 90% 60% at 50% -5%, rgba(99,102,241,0.14) 0%, transparent 70%)" }} />
-          <div className="absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 50% 40% at 75% 65%, rgba(255,229,0,0.04) 0%, transparent 60%)" }} />
-          <div className="absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 40% 30% at 20% 80%, rgba(168,85,247,0.05) 0%, transparent 60%)" }} />
-        </motion.div>
-
-        {/* Mouse spotlight — Resend-style */}
+        {/* Drifting blurred orbs */}
         <motion.div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute pointer-events-none rounded-full"
           style={{
-            background: `radial-gradient(650px circle at ${springX.get()}px ${springY.get()}px, rgba(255,229,0,0.055), transparent 65%)`,
+            width: 600, height: 600,
+            top: "-15%", left: "15%",
+            background: "radial-gradient(circle, rgba(255,229,0,0.12) 0%, transparent 70%)",
+            filter: "blur(80px)",
           }}
+          animate={{
+            x: [0, 60, -30, 0],
+            y: [0, -40, 30, 0],
+            scale: [1, 1.08, 0.96, 1],
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: 500, height: 500,
+            bottom: "10%", right: "-5%",
+            background: "radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)",
+            filter: "blur(80px)",
+          }}
+          animate={{
+            x: [0, -50, 20, 0],
+            y: [0, 40, -20, 0],
+            scale: [1, 0.92, 1.06, 1],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: 400, height: 400,
+            top: "40%", left: "-8%",
+            background: "radial-gradient(circle, rgba(168,85,247,0.09) 0%, transparent 70%)",
+            filter: "blur(80px)",
+          }}
+          animate={{
+            x: [0, 40, -20, 0],
+            y: [0, -30, 50, 0],
+            scale: [1, 1.1, 0.94, 1],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Animated grain */}
+        {/* Dot-grid overlay */}
+        <div className="absolute inset-0 pointer-events-none dot-grid opacity-30" />
+
+        {/* Grain overlay */}
         <div className="grain-overlay" />
 
-        {/* OXI-style enormous background logotype */}
+        {/* Background watermark */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none select-none">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-bold leading-none tracking-tighter text-white"
+            transition={{ duration: 1.4, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="font-display font-bold leading-none text-white"
             style={{
               fontSize: "clamp(72px, 18vw, 260px)",
-              opacity: 0.028,
+              opacity: 0.025,
               letterSpacing: "-0.04em",
               lineHeight: 0.85,
             }}
@@ -467,522 +543,404 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Grid lines — subtle structure */}
-        <div className="absolute inset-0 pointer-events-none dot-grid opacity-30" />
-
-        <div className="relative max-w-7xl mx-auto px-6 w-full pt-28 pb-24">
-          <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-20 items-center">
-
-            {/* ── LEFT: copy */}
-            <motion.div style={{ y: heroY }}>
-              {/* Announcement badge — Resend-style pill */}
-              <motion.div
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-flex items-center gap-2.5 mb-10"
-              >
-                <div
-                  className="flex items-center gap-2 border rounded-full px-3.5 py-1.5 backdrop-blur-sm"
-                  style={{
-                    borderColor: "rgba(255,255,255,0.1)",
-                    background: "rgba(255,255,255,0.04)",
-                  }}
-                >
-                  <motion.span
-                    className="w-1.5 h-1.5 rounded-full bg-primary"
-                    animate={{ opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <span className="font-mono text-[11px] text-white/55 uppercase tracking-widest">
-                    Announcing GPT-4o + Voice v2
-                  </span>
-                  <ChevronRight size={11} className="text-white/30" />
-                </div>
-              </motion.div>
-
-              {/* Heading — word-by-word from below */}
-              <h1
-                className="font-display font-bold leading-[0.88] tracking-tight mb-6"
-                style={{ fontSize: "clamp(44px, 7vw, 100px)" }}
-              >
-                <SplitReveal text="Production-grade" className="block text-white" delay={0.05} />
-                <SplitReveal
-                  text="AI for Discord."
-                  className="block"
-                  delay={0.18}
-                />
-              </h1>
-              {/* The muted "AI for Discord." words get muted color via CSS child span override */}
-              <style>{`
-                h1 span:nth-child(2) > span > span { color: rgba(255,255,255,0.38); }
-              `}</style>
-
-              <Reveal delay={0.42}>
-                <p className="font-mono text-sm leading-relaxed mb-10 max-w-[430px]"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  The AI layer trusted by thousands of Discord communities —
-                  memory, voice commands, 12 AI personalities, and an analytics dashboard.
-                </p>
-              </Reveal>
-
-              <Reveal delay={0.52} className="flex flex-wrap gap-3 items-center">
-                <MagneticElement strength={0.3}>
-                  <Link
-                    href="/register"
-                    className="inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3.5 transition-all duration-200"
-                    style={{
-                      background: "#FFE500",
-                      color: "#000",
-                    }}
-                  >
-                    Add to Discord
-                    <ArrowUpRight size={15} />
-                  </Link>
-                </MagneticElement>
-                <MagneticElement strength={0.15}>
-                  <Link
-                    href="/features"
-                    className="inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wide px-7 py-3.5 transition-all duration-200"
-                    style={{
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      color: "rgba(255,255,255,0.55)",
-                    }}
-                    onMouseEnter={e => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.35)";
-                      (e.currentTarget as HTMLElement).style.color = "#fff";
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
-                    }}
-                  >
-                    Explore Features
-                  </Link>
-                </MagneticElement>
-              </Reveal>
-            </motion.div>
-
-            {/* ── RIGHT: floating Discord tiles — Umbrel-inspired */}
-            <motion.div
-              style={{ y: tileY }}
-              className="hidden lg:grid grid-cols-2 gap-3"
+        <motion.div
+          style={{ y: heroY }}
+          className="relative max-w-7xl mx-auto px-6 w-full pt-32 pb-28"
+        >
+          {/* Eyebrow badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="inline-flex items-center mb-10"
+          >
+            <div
+              className="flex items-center gap-2 border rounded-full px-3.5 py-1.5"
+              style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}
             >
-              {discordTiles.map((tile, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 24 + i * 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{
-                    delay: 0.55 + i * 0.1,
-                    duration: 0.75,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                  whileHover={{
-                    scale: 1.04,
-                    rotate: 0,
-                    transition: { duration: 0.3 },
-                  }}
-                  className={`aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer ${tile.rotClass}`}
-                  style={{
-                    "--rot": tile.rot,
-                    background: `linear-gradient(145deg, ${tile.bg} 0%, ${tile.bg}cc 100%)`,
-                    border: `1px solid ${tile.accent}18`,
-                    boxShadow: `0 0 40px ${tile.accent}08, inset 0 1px 0 rgba(255,255,255,0.04)`,
-                  } as React.CSSProperties}
-                >
-                  <span style={{ fontSize: "2.6rem", lineHeight: 1 }}>{tile.emoji}</span>
-                  <span
-                    className="font-mono text-[9px] uppercase tracking-[0.18em]"
-                    style={{ color: `${tile.accent}99` }}
-                  >
-                    {tile.label}
-                  </span>
-                </motion.div>
-              ))}
-            </motion.div>
+              <motion.span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: "#FFE500" }}
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <span className="font-mono text-[11px] text-white/55 uppercase tracking-widest">
+                v2 — 31 AI Personalities now live
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Heading */}
+          <h1
+            className="font-display font-bold leading-[0.88] tracking-tight mb-6"
+            style={{ fontSize: "clamp(52px, 8vw, 112px)" }}
+          >
+            <SplitReveal text="AI for" className="block text-white" delay={0.05} />
+            <SplitReveal text="Discord." className="block" delay={0.18} />
+          </h1>
+          <style>{`
+            h1 > span:nth-child(2) > span > span { color: rgba(255,255,255,0.36); }
+          `}</style>
+
+          {/* Subhead */}
+          <Reveal delay={0.38}>
+            <p
+              className="font-mono text-sm leading-relaxed mb-4 max-w-[440px]"
+              style={{ color: "rgba(255,255,255,0.38)" }}
+            >
+              31 AI personalities. Memory. Voice. One bot.
+            </p>
+          </Reveal>
+
+          {/* Buttons */}
+          <Reveal delay={0.50} className="flex flex-wrap gap-3 items-center mb-10">
+            <MagneticElement strength={0.3}>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide px-7 py-3.5 transition-all duration-200 hover:scale-[1.03]"
+                style={{ background: "#FFE500", color: "#000" }}
+              >
+                Add to Discord →
+              </Link>
+            </MagneticElement>
+            <MagneticElement strength={0.15}>
+              <Link
+                href="/docs"
+                className="inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wide px-7 py-3.5 transition-all duration-200"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.35)";
+                  (e.currentTarget as HTMLElement).style.color = "#fff";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
+                }}
+              >
+                Read the docs
+              </Link>
+            </MagneticElement>
+          </Reveal>
+
+          {/* Stat badges */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              "31 Personalities",
+              "30+ Commands",
+              "Voice + Text",
+            ].map((badge, i) => (
+              <motion.div
+                key={badge}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full font-mono text-[11px]"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.45)",
+                  background: "rgba(255,255,255,0.03)",
+                }}
+              >
+                <span className="w-1 h-1 rounded-full bg-primary/60" />
+                {badge}
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
           style={{ opacity: heroOpacity }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
         >
+          <span className="font-mono text-[9px] uppercase tracking-widest text-white/20">scroll</span>
           <motion.div
-            animate={{ y: [0, 7, 0] }}
-            transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-            className="w-px h-10"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.25), transparent)" }}
+            className="w-1 h-1 rounded-full bg-white/30"
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
           />
         </motion.div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════ STATS */}
+      {/* ═══════════════════════════════════════════════ PERSONALITY TICKER */}
       <DrawLine />
-      <section style={{ background: "#0a0a0c" }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4">
-          {[
-            { label: "Servers", target: 3000, suffix: "+", icon: Globe2 },
-            { label: "Messages Processed", target: 1200000, icon: MessageSquare },
-            { label: "Uptime", target: 99, suffix: ".9%", icon: Zap },
-            { label: "AI Modes", target: 12, suffix: "", icon: Sparkles },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              className="p-8 border-r border-b"
-              style={{ borderColor: "rgba(255,255,255,0.05)" }}
-            >
-              <s.icon size={16} className="text-primary mb-3 opacity-70" />
-              <div
-                className="font-display font-bold text-white"
-                style={{ fontSize: "clamp(28px, 3.5vw, 48px)", letterSpacing: "-0.03em" }}
-              >
-                <CountUpNumber target={s.target} suffix={s.suffix ?? ""} />
-              </div>
-              <div className="font-mono text-[10px] uppercase tracking-widest mt-1.5"
-                style={{ color: "rgba(255,255,255,0.32)" }}>
-                {s.label}
-              </div>
-            </motion.div>
-          ))}
+      <section className="py-12 relative overflow-hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+        <div className="space-y-3">
+          <InfiniteRow
+            speed={40}
+            items={["/mentor", "/coder", "/tutor", "/interviewer", "/chef", "/lawyer", "/philosopher"].map((p) => (
+              <span key={p} className="font-mono text-sm text-white/20 px-4">{p}</span>
+            ))}
+          />
+          <InfiniteRow
+            speed={50}
+            reverse
+            items={["/scientist", "/comedian", "/writer", "/debugger", "/therapist", "/coach", "/historian"].map((p) => (
+              <span key={p} className="font-mono text-sm text-white/20 px-4">{p}</span>
+            ))}
+          />
         </div>
       </section>
       <DrawLine />
 
-      {/* ══════════════════════════════════════════════════════════ 01 — AI ENGINE */}
+      {/* ═══════════════════════════════════════════════════ BENTO GRID */}
       <section className="py-28 px-6" style={{ background: "#070708" }}>
         <div className="max-w-7xl mx-auto">
-          <Reveal className="flex items-center gap-3 mb-16">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em]"
-              style={{ color: "rgba(255,255,255,0.25)" }}>01</span>
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.06)", maxWidth: 40 }} />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em]"
-              style={{ color: "rgba(255,255,255,0.25)" }}>AI Engine</span>
+          {/* Section header */}
+          <Reveal className="mb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/25">
+              CAPABILITIES
+            </span>
           </Reveal>
+          <div className="mb-14">
+            <h2
+              className="font-display font-bold text-white leading-[0.9] tracking-tight"
+              style={{ fontSize: "clamp(36px, 5.5vw, 72px)" }}
+            >
+              <SplitReveal text="Built different." delay={0} />
+            </h2>
+          </div>
 
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            <div>
-              <h2
-                className="font-display font-bold text-white leading-[0.9] tracking-tight mb-6"
-                style={{ fontSize: "clamp(36px, 5.5vw, 72px)" }}
-              >
-                <SplitReveal text="Intelligence" className="block" delay={0} />
-                <SplitReveal
-                  text="that scales."
-                  className="block"
-                  delay={0.1}
-                />
-              </h2>
-              <style>{`
-                h2:has(span) span:nth-child(2) > span > span { color: rgba(255,255,255,0.4); }
-              `}</style>
-
-              <Reveal delay={0.15}>
-                <p className="font-mono text-sm leading-relaxed mb-10 max-w-md"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  GPT-4o under the hood with a custom memory layer. Responses get smarter as your community grows — every interaction trains the context model.
-                </p>
-              </Reveal>
-
-              {/* Mode list */}
-              <Reveal delay={0.2}>
-                <div className="space-y-1">
-                  {modes.map((m, i) => (
-                    <motion.div
-                      key={m.cmd}
-                      initial={{ opacity: 0, x: -16 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-40px" }}
-                      transition={{ duration: 0.45, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
-                      whileHover={{ x: 6 }}
-                      className="flex items-center justify-between py-3 px-4 cursor-pointer group transition-all"
-                      style={{
-                        borderBottom: "1px solid rgba(255,255,255,0.05)",
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <m.icon size={13} style={{ color: m.color }} className="opacity-70 group-hover:opacity-100 transition-opacity" />
-                        <span className="font-mono text-sm font-bold" style={{ color: m.color }}>
-                          {m.cmd}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        {m.desc}
-                      </span>
-                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-60 transition-opacity ml-2"
-                        style={{ color: m.color }} />
-                    </motion.div>
-                  ))}
+          {/* Bento grid */}
+          <div
+            ref={bentoRef}
+            className="grid grid-cols-1 md:grid-cols-12 gap-3"
+          >
+            {/* Card A — LiveChat (col-span 7) */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={bentoInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0, ease: [0.16, 1, 0.3, 1] }}
+              className="md:col-span-7 relative rounded-lg overflow-hidden group cursor-pointer"
+              style={{ background: "#0c0c0e", border: "1px solid rgba(255,255,255,0.06)" }}
+              onMouseEnter={() => setHoveredCard("chat")}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <div className="p-5 pb-0">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-3">
+                  Live Chat Terminal
                 </div>
-              </Reveal>
-            </div>
-
-            {/* Live chat terminal */}
-            <Reveal delay={0.1}>
-              <LiveChat />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      <DrawLine />
-
-      {/* ══════════════════════════════════════════════════════════ 02 — MEMORY */}
-      <section className="py-28 px-6" style={{ background: "#0a0a0c" }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-            {/* Graph visual */}
-            <Reveal delay={0}>
-              <MemoryGraph />
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {[
-                  { label: "Memory nodes per user", val: "5,000" },
-                  { label: "Cross-session recall", val: "∞" },
-                  { label: "Vector search latency", val: "<12ms" },
-                  { label: "Languages understood", val: "20+" },
-                ].map((s, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 + i * 0.08 }}
-                    className="p-4 rounded-lg"
-                    style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.05)" }}
-                  >
-                    <div className="font-display font-bold text-white text-xl">{s.val}</div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest mt-1"
-                      style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</div>
-                  </motion.div>
-                ))}
               </div>
-            </Reveal>
+              <div className="p-5 pt-2">
+                <LiveChat />
+              </div>
+              {hoveredCard === "chat" && <BorderBeam color="#FFE500" duration={3.5} />}
+            </motion.div>
 
-            <div>
-              <Reveal>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] mb-6 block"
-                  style={{ color: "rgba(255,255,255,0.25)" }}>
-                  02 — Memory System
+            {/* Card B — 31 Personalities (col-span 5) */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={bentoInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0.07, ease: [0.16, 1, 0.3, 1] }}
+              className="md:col-span-5 relative rounded-lg overflow-hidden group cursor-pointer p-6"
+              style={{ background: "#0c0c0e", border: "1px solid rgba(255,255,255,0.06)" }}
+              onMouseEnter={() => setHoveredCard("personalities")}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <div className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">
+                31 Personalities
+              </div>
+              <div className="font-display font-bold text-white text-2xl mb-5 tracking-tight">
+                A mode for every moment.
+              </div>
+              <PersonalityList />
+              {hoveredCard === "personalities" && <BorderBeam color="#6366f1" duration={3.5} />}
+            </motion.div>
+
+            {/* Card C — Voice Mode (col-span 4) */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={bentoInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0.13, ease: [0.16, 1, 0.3, 1] }}
+              className="md:col-span-4 relative rounded-lg overflow-hidden group cursor-pointer p-6"
+              style={{ background: "#0c0c0e", border: "1px solid rgba(255,255,255,0.06)" }}
+              onMouseEnter={() => setHoveredCard("voice")}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Mic size={13} style={{ color: "#0ea5e9" }} />
+                <span className="font-mono text-[10px] uppercase tracking-widest text-white/30">
+                  Voice Mode
                 </span>
-                <h2
-                  className="font-display font-bold text-white leading-[0.9] tracking-tight mb-6"
-                  style={{ fontSize: "clamp(36px, 5.5vw, 72px)" }}
-                >
-                  Remembers<br />
-                  <span style={{ color: "rgba(255,255,255,0.38)" }}>everything.</span>
-                </h2>
-                <p className="font-mono text-sm leading-relaxed mb-8"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  Directioner builds a persistent memory graph across every user interaction. Preferences, history, server events — searchable, recallable, and getting smarter every day.
-                </p>
-              </Reveal>
+              </div>
+              <div className="font-display font-bold text-white text-xl mb-4 tracking-tight">
+                Real-time voice AI.
+              </div>
+              <div className="flex justify-center py-4">
+                <EqualizerBars active className="h-12" />
+              </div>
+              <div className="font-mono text-[11px] text-white/35 mt-3">
+                Join any voice channel. Ask anything. Get answers in milliseconds.
+              </div>
+              {hoveredCard === "voice" && <BorderBeam color="#0ea5e9" duration={3.5} />}
+            </motion.div>
 
-              <Reveal delay={0.12} className="space-y-3">
-                {[
-                  "Vector database storage — cross-session recall",
-                  "Per-user preference learning",
-                  "Server-scoped and global memory nodes",
-                  "Semantic search over entire memory graph",
-                ].map((f, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 16 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.05 + i * 0.07 }}
-                    className="flex items-center gap-3"
-                  >
-                    <div
-                      className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
-                      style={{ background: "rgba(255,229,0,0.15)", border: "1px solid rgba(255,229,0,0.3)" }}
-                    >
-                      <span className="text-primary text-[9px] font-bold">✓</span>
-                    </div>
-                    <span className="font-mono text-xs text-white/60">{f}</span>
-                  </motion.div>
-                ))}
-              </Reveal>
-            </div>
+            {/* Card D — Memory (col-span 4) */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={bentoInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="md:col-span-4 relative rounded-lg overflow-hidden group cursor-pointer p-6"
+              style={{ background: "#0c0c0e", border: "1px solid rgba(255,255,255,0.06)" }}
+              onMouseEnter={() => setHoveredCard("memory")}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <div className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">
+                Memory
+              </div>
+              <div className="font-display font-bold text-white text-xl mb-4 tracking-tight">
+                Remembers everything.
+              </div>
+              <MemoryGraph />
+              <div className="font-mono text-[11px] text-white/35 mt-3">
+                Persistent memory graph across every session.
+              </div>
+              {hoveredCard === "memory" && <BorderBeam color="#10b981" duration={3.5} />}
+            </motion.div>
+
+            {/* Card E — Analytics (col-span 4) */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={bentoInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0.23, ease: [0.16, 1, 0.3, 1] }}
+              className="md:col-span-4 relative rounded-lg overflow-hidden group cursor-pointer p-6"
+              style={{ background: "#0c0c0e", border: "1px solid rgba(255,255,255,0.06)" }}
+              onMouseEnter={() => setHoveredCard("analytics")}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <div className="font-mono text-[10px] uppercase tracking-widest text-white/30 mb-1">
+                Analytics
+              </div>
+              <div className="font-display font-bold text-white text-xl mb-4 tracking-tight">
+                Server intelligence.
+              </div>
+              <Sparkline />
+              <div className="flex justify-between mt-2">
+                <div>
+                  <div className="font-display font-bold text-white text-2xl">+240%</div>
+                  <div className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Engagement</div>
+                </div>
+                <div>
+                  <div className="font-display font-bold text-white text-2xl">99.9%</div>
+                  <div className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Uptime</div>
+                </div>
+              </div>
+              {hoveredCard === "analytics" && <BorderBeam color="#FFE500" duration={3.5} />}
+            </motion.div>
           </div>
         </div>
       </section>
 
       <DrawLine />
 
-      {/* ══════════════════════════════════════════════════════════ 03 — VOICE */}
-      <section className="py-28 px-6 relative overflow-hidden" style={{ background: "#070708" }}>
-        {/* Sol Reader-inspired: gradient section background */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(14,165,233,0.06) 0%, transparent 70%)" }} />
-
-        <div className="max-w-7xl mx-auto relative">
-          <Reveal className="flex items-center gap-3 mb-16">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em]"
-              style={{ color: "rgba(255,255,255,0.25)" }}>03 — Voice Engine</span>
-          </Reveal>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2
-                className="font-display font-bold text-white leading-[0.9] tracking-tight mb-6"
-                style={{ fontSize: "clamp(36px, 5.5vw, 72px)" }}
-              >
-                Speak.<br />
-                <span style={{ color: "rgba(255,255,255,0.38)" }}>It listens.</span>
-              </h2>
-              <Reveal delay={0.1}>
-                <p className="font-mono text-sm leading-relaxed mb-10 max-w-md"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  Real-time voice responses in any Discord voice channel. Ultra-low latency, multi-speaker recognition, noise cancellation — built-in.
-                </p>
-              </Reveal>
-              <Reveal delay={0.2} className="grid grid-cols-2 gap-3">
-                {[
-                  ["<200ms", "Audio latency"],
-                  ["Multi-speaker", "Recognition"],
-                  ["Noise cancel", "Built-in"],
-                  ["Auto join", "Voice channels"],
-                ].map(([val, label], i) => (
-                  <div
-                    key={i}
-                    className="p-5 rounded-lg"
-                    style={{ background: "#0f0f12", border: "1px solid rgba(14,165,233,0.15)" }}
-                  >
-                    <div className="font-display font-bold text-white text-2xl tracking-tight"
-                      dangerouslySetInnerHTML={{ __html: val }} />
-                    <div className="font-mono text-[10px] uppercase tracking-widest mt-1"
-                      style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
-                  </div>
-                ))}
-              </Reveal>
-            </div>
-
-            {/* Live waveform visualization */}
-            <Reveal delay={0.1}>
-              <div
-                className="rounded-xl overflow-hidden relative"
+      {/* ═══════════════════════════════════════════════════════ STATS */}
+      <section
+        ref={statsRef}
+        className="py-0"
+        style={{ background: "#0a0a0c", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4">
+            {[
+              { num: 31, suffix: "+",    label: "Personalities",   prefix: "" },
+              { num: 30, suffix: "+",    label: "Slash Commands",  prefix: "" },
+              { num: 200, suffix: "ms",  label: "Response Time",   prefix: "< " },
+              { num: 99.9, suffix: "%",  label: "Uptime SLA",      prefix: "", decimals: 1 },
+            ].map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                className="p-10 flex flex-col items-center justify-center text-center"
                 style={{
-                  background: "#0c1420",
-                  border: "1px solid rgba(14,165,233,0.15)",
-                  boxShadow: "0 0 80px rgba(14,165,233,0.05)",
+                  borderRight: i < 3 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                  borderBottom: "none",
                 }}
               >
-                <div className="p-5 border-b flex items-center justify-between"
-                  style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-center gap-2">
-                    <Mic size={14} style={{ color: "#0ea5e9" }} />
-                    <span className="font-mono text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      VOICE CHANNEL — LIVE
-                    </span>
-                  </div>
-                  <EqualizerBars active className="h-4" />
+                <div
+                  className="font-display font-bold text-white leading-none mb-2"
+                  style={{ fontSize: "clamp(48px, 5vw, 80px)", letterSpacing: "-0.03em" }}
+                >
+                  {s.prefix}<CountUpNumber target={s.num} suffix={s.suffix} decimals={s.decimals ?? 0} />
                 </div>
-                <div className="p-8 flex flex-col items-center justify-center gap-6">
-                  {/* Animated voice bars — OXI-style illuminated bars */}
-                  <div className="flex items-end gap-1.5 h-24">
-                    {Array.from({ length: 32 }).map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="w-2 rounded-sm"
-                        style={{ background: `linear-gradient(to top, #0ea5e9, #6366f1)` }}
-                        animate={{
-                          height: [
-                            `${15 + Math.sin(i * 0.8) * 30}%`,
-                            `${40 + Math.cos(i * 0.5 + 1) * 40}%`,
-                            `${20 + Math.sin(i * 0.6 + 2) * 25}%`,
-                            `${15 + Math.sin(i * 0.8) * 30}%`,
-                          ],
-                        }}
-                        transition={{
-                          duration: 1.8 + (i % 5) * 0.3,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: i * 0.04,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-center">
-                    <div
-                      className="font-display font-bold text-white"
-                      style={{ fontSize: "clamp(40px, 6vw, 72px)", letterSpacing: "-0.04em" }}
-                    >
-                      &lt;200ms
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest mt-1"
-                      style={{ color: "rgba(255,255,255,0.3)" }}>Average Latency</div>
-                  </div>
+                <div
+                  className="font-mono text-[10px] uppercase tracking-widest"
+                  style={{ color: "rgba(255,255,255,0.3)" }}
+                >
+                  {s.label}
                 </div>
-              </div>
-            </Reveal>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
-
       <DrawLine />
 
-      {/* ══════════════════════════════════════════════════════════ 04 — AI MODES */}
-      <section className="py-28 px-6" style={{ background: "#0a0a0c" }}>
+      {/* ══════════════════════════════════════════════════ HOW IT WORKS */}
+      <section ref={stepsRef} className="py-28 px-6" style={{ background: "#070708" }}>
         <div className="max-w-7xl mx-auto">
-          <Reveal className="flex items-center justify-between mb-16">
-            <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] block mb-3"
-                style={{ color: "rgba(255,255,255,0.25)" }}>04 — AI Modes</span>
-              <h2
-                className="font-display font-bold text-white leading-[0.9] tracking-tight"
-                style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}
-              >
-                12 personalities.<br />
-                <span style={{ color: "rgba(255,255,255,0.4)" }}>One bot.</span>
-              </h2>
-            </div>
-            <Link href="/commands"
-              className="hidden lg:inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wide"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              All Commands <ArrowUpRight size={13} />
-            </Link>
+          <Reveal className="mb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/25">
+              HOW IT WORKS
+            </span>
           </Reveal>
+          <div className="mb-16">
+            <h2
+              className="font-display font-bold text-white leading-[0.9] tracking-tight"
+              style={{ fontSize: "clamp(32px, 4.5vw, 64px)" }}
+            >
+              <SplitReveal text="Simple to start." delay={0} className="block" />
+              <SplitReveal text="Powerful in practice." delay={0.12} className="block text-white/40" />
+            </h2>
+          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {modes.map((m, i) => (
+          <div className="grid md:grid-cols-3 gap-px" style={{ background: "rgba(255,255,255,0.04)" }}>
+            {[
+              {
+                num: "01",
+                title: "Add Bot",
+                body: "Invite Directioner to your Discord server with one click. No configuration needed.",
+                icon: "🚀",
+              },
+              {
+                num: "02",
+                title: "Pick Personality",
+                body: "Use /mentor, /coder, /chef or any of 31 slash commands. Switch any time.",
+                icon: "🎭",
+              },
+              {
+                num: "03",
+                title: "It Remembers",
+                body: "Bot learns your server's context, members, and preferences over time. Gets smarter daily.",
+                icon: "🧠",
+              },
+            ].map((step, i) => (
               <motion.div
-                key={m.cmd}
+                key={i}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.55, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ y: -4 }}
-                className="group p-6 rounded-lg cursor-pointer transition-all duration-300"
-                style={{
-                  background: "#0f0f12",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  boxShadow: "none",
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = `${m.color}30`;
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 30px ${m.color}08`;
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                className="p-8 md:p-10"
+                style={{ background: "#070708" }}
               >
-                <div className="flex items-center gap-2 mb-4">
-                  <m.icon size={15} style={{ color: m.color }} />
-                  <span className="font-mono text-sm font-bold" style={{ color: m.color }}>
-                    {m.cmd}
-                  </span>
+                <div
+                  className="font-display font-bold mb-6 leading-none"
+                  style={{ fontSize: "clamp(48px, 6vw, 80px)", color: "rgba(255,255,255,0.06)", letterSpacing: "-0.03em" }}
+                >
+                  {step.num}
                 </div>
-                <p className="font-mono text-[11px] leading-relaxed"
-                  style={{ color: "rgba(255,255,255,0.38)" }}>
-                  {m.desc}
+                <div className="text-3xl mb-4">{step.icon}</div>
+                <h3 className="font-display font-bold text-white text-xl mb-3 tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="font-mono text-[12px] leading-relaxed text-white/40">
+                  {step.body}
                 </p>
               </motion.div>
             ))}
@@ -992,41 +950,66 @@ export default function Home() {
 
       <DrawLine />
 
-      {/* ══════════════════════════════════════════════════════════ TESTIMONIALS */}
-      <section className="py-28" style={{ background: "#070708" }}>
-        <div className="max-w-7xl mx-auto px-6 mb-12">
-          <Reveal>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] block mb-4"
-              style={{ color: "rgba(255,255,255,0.25)" }}>05 — Community</span>
-            <h2
-              className="font-display font-bold text-white leading-[0.9] tracking-tight"
-              style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}
-            >
-              Loved by thousands.
-            </h2>
+      {/* ═══════════════════════════════════════════════ TESTIMONIALS */}
+      <section className="py-28" style={{ background: "#0a0a0c" }}>
+        <div className="max-w-7xl mx-auto px-6 mb-14">
+          <Reveal className="mb-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/25">
+              COMMUNITY
+            </span>
           </Reveal>
+          <h2
+            className="font-display font-bold text-white leading-[0.9] tracking-tight"
+            style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}
+          >
+            <SplitReveal text="Loved by thousands." delay={0} />
+          </h2>
         </div>
 
-        {/* Row 1 — left to right */}
-        <div className="mb-4">
+        <div className="space-y-4">
           <InfiniteRow
-            speed={45}
+            speed={50}
             items={testimonials.map((t, i) => (
               <div
                 key={i}
-                className="w-72 p-5 rounded-xl shrink-0"
-                style={{
-                  background: "#0f0f12",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                }}
+                className="w-72 p-5 rounded-lg shrink-0"
+                style={{ background: "#0f0f12", border: "1px solid rgba(255,255,255,0.06)" }}
               >
-                <p className="font-mono text-[11px] leading-relaxed text-white/60 mb-4">
+                <div
+                  className="w-8 h-8 rounded-full mb-3"
+                  style={{ background: `linear-gradient(135deg, #FFE500${Math.floor(40 + i * 20).toString(16)}, #6366f1)` }}
+                />
+                <p className="font-mono text-[11px] leading-relaxed text-white/55 mb-4">
                   "{t.q}"
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold text-primary">{t.u}</span>
-                  <span className="font-mono text-[9px] uppercase tracking-wide"
-                    style={{ color: "rgba(255,255,255,0.25)" }}>
+                  <span className="font-mono text-[10px] font-bold" style={{ color: "#FFE500" }}>{t.u}</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wide text-white/25">
+                    {t.s} · {t.members}
+                  </span>
+                </div>
+              </div>
+            ))}
+          />
+          <InfiniteRow
+            speed={65}
+            reverse
+            items={testimonials2.map((t, i) => (
+              <div
+                key={i}
+                className="w-72 p-5 rounded-lg shrink-0"
+                style={{ background: "#0c0c0f", border: "1px solid rgba(255,255,255,0.04)" }}
+              >
+                <div
+                  className="w-8 h-8 rounded-full mb-3"
+                  style={{ background: `linear-gradient(135deg, #0ea5e9, #a855f7${Math.floor(60 + i * 15).toString(16)})` }}
+                />
+                <p className="font-mono text-[11px] leading-relaxed text-white/40 mb-4">
+                  "{t.q}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] font-bold" style={{ color: "rgba(255,229,0,0.7)" }}>{t.u}</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wide text-white/20">
                     {t.s} · {t.members}
                   </span>
                 </div>
@@ -1034,102 +1017,66 @@ export default function Home() {
             ))}
           />
         </div>
-
-        {/* Row 2 — right to left */}
-        <InfiniteRow
-          speed={55}
-          reverse
-          items={[...testimonials].reverse().map((t, i) => (
-            <div
-              key={i}
-              className="w-64 p-5 rounded-xl shrink-0"
-              style={{
-                background: "#0c0c0f",
-                border: "1px solid rgba(255,255,255,0.04)",
-              }}
-            >
-              <p className="font-mono text-[11px] leading-relaxed text-white/40 mb-4">
-                "{t.q}"
-              </p>
-              <span className="font-mono text-[9px] font-bold"
-                style={{ color: "rgba(255,229,0,0.6)" }}>{t.u}</span>
-            </div>
-          ))}
-        />
       </section>
 
       <DrawLine />
 
-      {/* ══════════════════════════════════════════════════════════ CTA */}
-      <section className="py-28 px-6 relative overflow-hidden" style={{ background: "#070708" }}>
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(255,229,0,0.06) 0%, transparent 70%)" }} />
+      {/* ═══════════════════════════════════════════════════════ FINAL CTA */}
+      <section className="py-32 px-6 relative overflow-hidden" style={{ background: "#070708" }}>
+        {/* Animated gradient glow behind the button */}
+        <motion.div
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: 700, height: 400,
+            bottom: "-20%", left: "50%",
+            transform: "translateX(-50%)",
+            background: "radial-gradient(ellipse, rgba(255,229,0,0.1) 0%, transparent 70%)",
+            filter: "blur(60px)",
+          }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        />
 
-        <div className="max-w-7xl mx-auto relative text-center">
-          <Reveal>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] block mb-8"
-              style={{ color: "rgba(255,255,255,0.25)" }}>
-              Get Started Today
+        <div className="max-w-4xl mx-auto relative text-center">
+          <Reveal className="mb-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/25">
+              Get Started
             </span>
           </Reveal>
 
-          {/* OXI-inspired — massive heading */}
           <h2
-            className="font-display font-bold text-white leading-[0.88] tracking-tight mx-auto mb-10"
-            style={{ fontSize: "clamp(48px, 9vw, 128px)", maxWidth: "900px" }}
+            className="font-display font-bold text-white leading-[0.88] tracking-tight mb-5"
+            style={{ fontSize: "clamp(48px, 9vw, 120px)" }}
           >
-            <SplitReveal text="Wake up" className="block" delay={0} />
-            <SplitReveal
-              text="your server."
-              className="block text-gradient-yellow"
-              delay={0.12}
-            />
+            <SplitReveal text="Your Discord." className="block" delay={0} />
+            <SplitReveal text="Supercharged." className="block" delay={0.12} />
           </h2>
-          <style>{`.text-gradient-yellow > span > span { background: linear-gradient(135deg, #FFE500, #ff9500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }`}</style>
+          <style>{`
+            h2.cta-heading > span:nth-child(2) > span > span {
+              background: linear-gradient(135deg, #FFE500, #ff9500);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            }
+          `}</style>
 
-          <Reveal delay={0.3} className="flex flex-wrap gap-4 justify-center">
+          <Reveal delay={0.25}>
+            <p className="font-mono text-sm text-white/40 mb-10">
+              Add Directioner free — no credit card needed.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.35} className="flex flex-wrap gap-4 justify-center">
             <MagneticElement strength={0.3}>
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 font-mono font-bold text-base uppercase tracking-wide px-9 py-4 transition-all"
+                className="inline-flex items-center gap-2.5 font-mono font-bold text-base uppercase tracking-wide px-9 py-4 transition-all hover:scale-[1.03]"
                 style={{ background: "#FFE500", color: "#000" }}
               >
                 Add to Discord
                 <ArrowUpRight size={18} />
               </Link>
             </MagneticElement>
-            <MagneticElement strength={0.15}>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 font-mono text-base uppercase tracking-wide px-9 py-4 transition-all"
-                style={{
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  color: "rgba(255,255,255,0.55)",
-                }}
-              >
-                View Pricing
-              </Link>
-            </MagneticElement>
-          </Reveal>
-
-          {/* Ticker — brands/trust */}
-          <Reveal delay={0.4} className="mt-24 overflow-hidden">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-center mb-6"
-              style={{ color: "rgba(255,255,255,0.2)" }}>
-              Trusted across communities
-            </div>
-            <div className="overflow-hidden">
-              <div className="flex gap-16 animate-ticker whitespace-nowrap">
-                {["GAMING", "STUDY", "DEV", "ANIME", "CRYPTO", "ART", "MUSIC", "SPORTS",
-                  "GAMING", "STUDY", "DEV", "ANIME", "CRYPTO", "ART", "MUSIC", "SPORTS"].map((s, i) => (
-                  <span key={i}
-                    className="font-display font-bold text-3xl uppercase shrink-0"
-                    style={{ color: "rgba(255,255,255,0.06)", letterSpacing: "-0.02em" }}>
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
           </Reveal>
         </div>
       </section>

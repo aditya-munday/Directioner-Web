@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, X, ChevronDown, ArrowUpRight, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { PageHero, Reveal, DrawLine, SplitReveal } from "@/components/ui/motion-primitives";
 import { TiltCard } from "@/components/animations/TiltCard";
 import { BorderBeam } from "@/components/animations/BorderBeam";
-import { TextScramble } from "@/components/animations/TextScramble";
 import { ClipReveal } from "@/components/animations/ClipReveal";
 
 const tiers = [
@@ -15,13 +14,16 @@ const tiers = [
     name: "FREE",
     price: { monthly: 0, yearly: 0 },
     tagline: "For personal servers",
-    color: "rgba(255,255,255,0.25)",
+    color: "rgba(255,255,255,0.35)",
     features: [
-      "1 bot instance",
-      "100 messages / day",
-      "5 voice interactions / day",
-      "Basic text modes",
-      "Community support",
+      { text: "1 bot instance", included: true },
+      { text: "100 messages / day", included: true },
+      { text: "5 voice interactions / day", included: true },
+      { text: "Basic text modes", included: true },
+      { text: "Community support", included: true },
+      { text: "Memory nodes", included: false },
+      { text: "Analytics", included: false },
+      { text: "Priority support", included: false },
     ],
     cta: "Get Started Free",
     href: "/register",
@@ -34,13 +36,14 @@ const tiers = [
     tagline: "For growing communities",
     color: "#10b981",
     features: [
-      "1 bot instance",
-      "1,000 messages / day",
-      "50 voice interactions / day",
-      "All 6 personality modes",
-      "1,000 memory nodes",
-      "Basic analytics",
-      "Email support",
+      { text: "1 bot instance", included: true },
+      { text: "1,000 messages / day", included: true },
+      { text: "50 voice interactions / day", included: true },
+      { text: "All 6 personality modes", included: true },
+      { text: "1,000 memory nodes", included: true },
+      { text: "Basic analytics", included: true },
+      { text: "Email support", included: true },
+      { text: "API access", included: false },
     ],
     cta: "Start Starter",
     href: "/register",
@@ -53,16 +56,16 @@ const tiers = [
     tagline: "For active servers",
     color: "#FFE500",
     features: [
-      "3 bot instances",
-      "Unlimited messages",
-      "500 voice interactions / day",
-      "All 6 personality modes",
-      "5,000 memory nodes",
-      "Advanced analytics",
-      "Priority support",
-      "Custom wake word",
-      "GitHub integration",
-      "99.9% uptime SLA",
+      { text: "3 bot instances", included: true },
+      { text: "Unlimited messages", included: true },
+      { text: "500 voice interactions / day", included: true },
+      { text: "All 6 personality modes", included: true },
+      { text: "5,000 memory nodes", included: true },
+      { text: "Advanced analytics", included: true },
+      { text: "Priority support", included: true },
+      { text: "Custom wake word", included: true },
+      { text: "GitHub integration", included: true },
+      { text: "99.9% uptime SLA", included: true },
     ],
     cta: "Start Pro",
     href: "/register",
@@ -75,16 +78,16 @@ const tiers = [
     tagline: "For large communities",
     color: "#a855f7",
     features: [
-      "10 bot instances",
-      "Unlimited everything",
-      "Unlimited voice",
-      "All 6 personality modes",
-      "Unlimited memory nodes",
-      "Custom dashboards",
-      "API access",
-      "White-label option",
-      "Dedicated infrastructure",
-      "24/7 phone support",
+      { text: "10 bot instances", included: true },
+      { text: "Unlimited everything", included: true },
+      { text: "Unlimited voice", included: true },
+      { text: "All 6 personality modes", included: true },
+      { text: "Unlimited memory nodes", included: true },
+      { text: "Custom dashboards", included: true },
+      { text: "API access", included: true },
+      { text: "White-label option", included: true },
+      { text: "Dedicated infrastructure", included: true },
+      { text: "24/7 phone support", included: true },
     ],
     cta: "Start Max",
     href: "/register",
@@ -93,23 +96,39 @@ const tiers = [
 ];
 
 const tableFeatures = [
-  { feature: "Bot Instances",        free: "1",     starter: "1",        pro: "3",            max: "10" },
-  { feature: "Messages / Day",       free: "100",   starter: "1,000",    pro: "Unlimited",    max: "Unlimited" },
-  { feature: "Voice Interactions",   free: "5",     starter: "50",       pro: "500",          max: "Unlimited" },
-  { feature: "Memory Nodes",         free: "—",     starter: "1,000",    pro: "5,000",        max: "Unlimited" },
-  { feature: "Personality Modes",    free: "Basic", starter: "All 6",    pro: "All 6",        max: "All 6" },
-  { feature: "Analytics",            free: "—",     starter: "Basic",    pro: "Advanced",     max: "Custom" },
-  { feature: "API Access",           free: "—",     starter: "—",        pro: "—",            max: "✓" },
-  { feature: "Uptime SLA",           free: "—",     starter: "—",        pro: "99.9%",        max: "99.99%" },
-  { feature: "Support",              free: "Community", starter: "Email", pro: "Priority",    max: "24/7 Phone" },
-  { feature: "White-label",          free: "—",     starter: "—",        pro: "—",            max: "✓" },
+  { feature: "Bot Instances",        free: "1",         starter: "1",        pro: "3",            max: "10" },
+  { feature: "Messages / Day",       free: "100",       starter: "1,000",    pro: "Unlimited",    max: "Unlimited" },
+  { feature: "Voice Interactions",   free: "5",         starter: "50",       pro: "500",          max: "Unlimited" },
+  { feature: "Memory Nodes",         free: "—",         starter: "1,000",    pro: "5,000",        max: "Unlimited" },
+  { feature: "Personality Modes",    free: "Basic",     starter: "All 6",    pro: "All 6",        max: "All 6" },
+  { feature: "Analytics",            free: "—",         starter: "Basic",    pro: "Advanced",     max: "Custom" },
+  { feature: "API Access",           free: "—",         starter: "—",        pro: "—",            max: "✓" },
+  { feature: "Uptime SLA",           free: "—",         starter: "—",        pro: "99.9%",        max: "99.99%" },
+  { feature: "Support",              free: "Community", starter: "Email",    pro: "Priority",     max: "24/7 Phone" },
+  { feature: "White-label",          free: "—",         starter: "—",        pro: "—",            max: "✓" },
 ];
 
 const faqs = [
-  { q: "Can I change my plan any time?", a: "Yes. Upgrade or downgrade at any time from your dashboard. Downgrades take effect at end of billing period." },
-  { q: "Is there a free trial?", a: "Pro and Max have a 14-day free trial — no credit card required to start." },
-  { q: "What payment methods do you accept?", a: "UPI, credit/debit card, net banking, and all major digital wallets via Razorpay." },
-  { q: "What happens to my data if I cancel?", a: "Your data is retained for 30 days after cancellation so you can export it. After that, it is permanently deleted per our privacy policy." },
+  {
+    q: "Can I change my plan any time?",
+    a: "Yes. Upgrade or downgrade at any time from your dashboard. Downgrades take effect at the end of the billing period so you keep access to your current plan's features until then.",
+  },
+  {
+    q: "Is there a free trial for paid plans?",
+    a: "Pro and Max plans come with a 14-day free trial — no credit card required to start. If you decide it's not for you, just cancel before the trial ends and you won't be charged.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We accept UPI, credit/debit cards, net banking, and all major digital wallets via Razorpay. All transactions are processed securely and we never store your payment details.",
+  },
+  {
+    q: "What happens to my data if I cancel?",
+    a: "Your data is retained for 30 days after cancellation so you can export it at any time. After 30 days, it is permanently deleted per our privacy policy. We'll send you reminders before deletion.",
+  },
+  {
+    q: "Do you offer discounts for nonprofits or educational servers?",
+    a: "Yes — we offer up to 50% discount for verified nonprofit organizations and educational institutions. Contact our support team with your credentials to apply.",
+  },
 ];
 
 export default function Pricing() {
@@ -121,17 +140,23 @@ export default function Pricing() {
     <div style={{ background: "#070708" }}>
       <PageHero
         eyebrow="Pricing — Simple plans"
-        heading="Choose your tier."
-        sub="Start free. Scale as your community grows. No lock-in."
+        heading="Pricing that scales with you."
+        sub="Start free. Scale as your community grows. No lock-in, no surprise fees — just straightforward pricing."
       />
 
       {/* Billing toggle */}
-      <Reveal className="flex items-center justify-center gap-4 pb-16 px-6">
-        <span className="font-mono text-xs uppercase tracking-wide" style={{ color: yearly ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.8)" }}>Monthly</span>
+      <Reveal className="flex items-center justify-center gap-4 pb-20 px-6">
+        <span
+          className="font-mono text-xs uppercase tracking-wide transition-colors"
+          style={{ color: yearly ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.75)" }}
+        >
+          Monthly
+        </span>
         <button
           onClick={() => setYearly(!yearly)}
-          className="relative w-14 h-7 rounded-full transition-colors"
+          className="relative w-14 h-7 rounded-full transition-colors focus:outline-none"
           style={{ background: yearly ? "#FFE500" : "rgba(255,255,255,0.1)" }}
+          aria-label="Toggle billing period"
         >
           <motion.div
             className="absolute top-1 w-5 h-5 rounded-full"
@@ -140,16 +165,23 @@ export default function Pricing() {
             transition={{ type: "spring", stiffness: 600, damping: 40 }}
           />
         </button>
-        <span className="font-mono text-xs uppercase tracking-wide" style={{ color: yearly ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)" }}>Yearly</span>
+        <span
+          className="font-mono text-xs uppercase tracking-wide transition-colors"
+          style={{ color: yearly ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.3)" }}
+        >
+          Yearly
+        </span>
         <AnimatePresence>
           {yearly && (
             <motion.span
               initial={{ opacity: 0, scale: 0.8, x: -8 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.8, x: -8 }}
-              className="font-mono text-[9px] px-2 py-1 uppercase tracking-wide"
-              style={{ background: "rgba(255,229,0,0.1)", color: "#FFE500", border: "1px solid rgba(255,229,0,0.2)" }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-1.5 font-mono text-[9px] px-2.5 py-1 uppercase tracking-widest rounded"
+              style={{ background: "rgba(255,229,0,0.1)", color: "#FFE500", border: "1px solid rgba(255,229,0,0.25)" }}
             >
+              <Zap size={9} />
               Save 20%
             </motion.span>
           )}
@@ -157,138 +189,216 @@ export default function Pricing() {
       </Reveal>
 
       {/* Tier cards */}
-      <div className="max-w-7xl mx-auto px-6 pb-24 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {tiers.map((tier, i) => (
-          <motion.div
-            key={tier.id}
-            initial={{ opacity: 0, y: 32 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <TiltCard
-              intensity={5}
-              glowColor={`${tier.color}08`}
+      <div className="max-w-7xl mx-auto px-6 pb-28 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {tiers.map((tier, i) => {
+          const CardContent = (
+            <div
               className="relative rounded-xl overflow-hidden flex flex-col h-full"
+              style={{
+                background: tier.highlight
+                  ? "linear-gradient(145deg, rgba(255,229,0,0.06), rgba(255,229,0,0.02))"
+                  : "linear-gradient(145deg, #111114, #0d0d10)",
+                border: tier.highlight
+                  ? "1px solid rgba(255,229,0,0.35)"
+                  : "1px solid rgba(255,255,255,0.07)",
+                boxShadow: tier.highlight ? "0 0 60px rgba(255,229,0,0.06)" : "none",
+              }}
             >
-              <div
-                className="relative rounded-xl overflow-hidden flex flex-col h-full"
-                style={{
-                  background: tier.highlight ? "rgba(255,229,0,0.04)" : "#0f0f12",
-                  border: tier.highlight
-                    ? "1px solid rgba(255,229,0,0.3)"
-                    : "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                {tier.highlight && (
-                  <div
-                    className="absolute top-0 inset-x-0 h-px"
-                    style={{ background: "linear-gradient(90deg, transparent, #FFE500, transparent)" }}
-                  />
-                )}
+              {/* Highlight top line */}
+              {tier.highlight && (
+                <div
+                  className="absolute top-0 inset-x-0 h-px"
+                  style={{ background: "linear-gradient(90deg, transparent, #FFE500, transparent)" }}
+                />
+              )}
 
-                {/* Border beam on highlighted card */}
-                {tier.highlight && <BorderBeam color="#FFE500" duration={4} />}
+              {/* Most Popular badge */}
+              {tier.highlight && (
+                <div className="absolute top-4 right-4">
+                  <span
+                    className="font-mono text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ background: "#FFE500", color: "#000", fontWeight: 700 }}
+                  >
+                    Most Popular
+                  </span>
+                </div>
+              )}
 
-                <div className="p-8 flex-1">
-                  <TextScramble
-                    text={tier.name}
-                    className="font-mono text-[10px] uppercase tracking-[0.22em] mb-2 block"
-                    delay={i * 0.15}
-                    duration={0.7}
-                    tag="div"
-                    style={{ color: tier.color }}
-                  />
-                  <div className="font-mono text-xs mb-6" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    {tier.tagline}
-                  </div>
+              {tier.highlight && <BorderBeam color="#FFE500" duration={4} />}
 
-                  <div className="mb-8">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={yearly ? "y" : "m"}
-                        initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-baseline gap-1"
-                      >
-                        <span className="font-display font-bold text-white" style={{ fontSize: 48, lineHeight: 1 }}>
+              <div className="p-7 flex-1">
+                {/* Tier name + tagline */}
+                <div
+                  className="font-mono text-[10px] uppercase tracking-[0.22em] mb-1 block font-bold"
+                  style={{ color: tier.color }}
+                >
+                  {tier.name}
+                </div>
+                <div className="font-mono text-[10px] mb-7" style={{ color: "rgba(255,255,255,0.28)" }}>
+                  {tier.tagline}
+                </div>
+
+                {/* Price */}
+                <div className="mb-7">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={yearly ? "y" : "m"}
+                      initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="flex items-baseline gap-1">
+                        {tier.price.monthly > 0 && yearly && (
+                          <span
+                            className="font-mono text-sm line-through mr-1"
+                            style={{ color: "rgba(255,255,255,0.2)" }}
+                          >
+                            ${tier.price.monthly}
+                          </span>
+                        )}
+                        <span
+                          className="font-display font-bold text-white"
+                          style={{ fontSize: 52, lineHeight: 1 }}
+                        >
                           ${yearly ? tier.price.yearly : tier.price.monthly}
                         </span>
                         {tier.price.monthly > 0 && (
-                          <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>/mo</span>
+                          <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.28)" }}>
+                            /mo
+                          </span>
                         )}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
+                      </div>
+                      {tier.price.monthly > 0 && yearly && (
+                        <div className="mt-1.5">
+                          <span
+                            className="font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded"
+                            style={{ background: "rgba(255,229,0,0.1)", color: "#FFE500", border: "1px solid rgba(255,229,0,0.2)" }}
+                          >
+                            Save 20%
+                          </span>
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-                  <ul className="space-y-3 mb-8">
-                    {tier.features.map((f, j) => (
-                      <motion.li
-                        key={j}
-                        initial={{ opacity: 0, x: -8 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.05 + j * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                        className="flex items-center gap-2.5"
-                      >
+                {/* Features list */}
+                <ul className="space-y-2.5">
+                  {tier.features.map((f, j) => (
+                    <motion.li
+                      key={j}
+                      initial={{ opacity: 0, x: -8 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ delay: 0.04 + j * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                      className="flex items-center gap-2.5"
+                    >
+                      {f.included ? (
                         <div
                           className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
-                          style={{
-                            background: `${tier.color}18`,
-                            border: `1px solid ${tier.color}35`,
-                          }}
+                          style={{ background: `${tier.color}18`, border: `1px solid ${tier.color}35` }}
                         >
-                          <Check size={10} style={{ color: tier.color }} />
+                          <Check size={9} style={{ color: tier.color }} strokeWidth={3} />
                         </div>
-                        <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{f}</span>
-                      </motion.li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="p-6 pt-0">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Link
-                      href={tier.href}
-                      className="block w-full text-center font-mono font-bold text-sm uppercase tracking-wide px-5 py-3.5 transition-all"
-                      style={
-                        tier.highlight
-                          ? { background: "#FFE500", color: "#000" }
-                          : { border: `1px solid ${tier.color}40`, color: tier.color }
-                      }
-                    >
-                      {tier.cta}
-                    </Link>
-                  </motion.div>
-                </div>
+                      ) : (
+                        <div
+                          className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0"
+                          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        >
+                          <X size={9} style={{ color: "rgba(255,255,255,0.2)" }} strokeWidth={2.5} />
+                        </div>
+                      )}
+                      <span
+                        className="font-mono text-xs"
+                        style={{ color: f.included ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.22)" }}
+                      >
+                        {f.text}
+                      </span>
+                    </motion.li>
+                  ))}
+                </ul>
               </div>
-            </TiltCard>
-          </motion.div>
-        ))}
+
+              <div className="p-6 pt-0">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    href={tier.href}
+                    className="flex items-center justify-center gap-2 w-full text-center font-mono font-bold text-sm uppercase tracking-wide px-5 py-3.5 transition-all"
+                    style={
+                      tier.highlight
+                        ? { background: "#FFE500", color: "#000" }
+                        : { border: `1px solid ${tier.color}40`, color: tier.color, background: `${tier.color}06` }
+                    }
+                  >
+                    {tier.cta}
+                    {tier.highlight && <ArrowUpRight size={14} />}
+                  </Link>
+                </motion.div>
+              </div>
+            </div>
+          );
+
+          return (
+            <motion.div
+              key={tier.id}
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col"
+              style={tier.highlight ? { marginTop: -12 } : {}}
+            >
+              {tier.highlight ? (
+                <TiltCard intensity={5} glowColor="rgba(255,229,0,0.06)" className="flex flex-col h-full">
+                  {CardContent}
+                </TiltCard>
+              ) : (
+                CardContent
+              )}
+            </motion.div>
+          );
+        })}
       </div>
 
       <DrawLine />
 
       {/* Comparison table */}
-      <section className="py-24 px-6" style={{ background: "#0a0a0c" }}>
+      <section className="py-28 px-6" style={{ background: "#08080a" }}>
         <div className="max-w-5xl mx-auto">
-          <Reveal className="mb-12">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
-              Full comparison
+          <ClipReveal delay={0.05}>
+            <div className="mb-14">
+              <div
+                className="font-mono text-[10px] uppercase tracking-[0.22em] mb-4"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                Full comparison
+              </div>
+              <h2
+                className="font-display font-bold text-white"
+                style={{ fontSize: "clamp(28px, 4vw, 48px)" }}
+              >
+                <SplitReveal text="Everything side by side." delay={0.04} />
+              </h2>
             </div>
-            <h2 className="font-display font-bold text-white" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-              <SplitReveal text="Everything side by side." />
-            </h2>
-          </Reveal>
+          </ClipReveal>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left" style={{ minWidth: 540 }}>
               <thead>
-                <tr className="border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  <th className="py-4 font-mono text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>Feature</th>
+                <tr className="border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                  <th
+                    className="py-4 pr-6 font-mono text-[9px] uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.22)" }}
+                  >
+                    Feature
+                  </th>
                   {tiers.map(t => (
-                    <th key={t.id} className="py-4 text-center font-mono text-[10px] uppercase tracking-widest" style={{ color: t.color }}>
+                    <th
+                      key={t.id}
+                      className="py-4 text-center font-mono text-[9px] uppercase tracking-widest"
+                      style={{ color: t.color }}
+                    >
                       {t.name}
                     </th>
                   ))}
@@ -298,17 +408,30 @@ export default function Pricing() {
                 {tableFeatures.map((row, i) => (
                   <motion.tr
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -12 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                    className="border-b"
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                    className="border-b group"
                     style={{ borderColor: "rgba(255,255,255,0.04)" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.015)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                   >
-                    <td className="py-4 font-mono text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{row.feature}</td>
+                    <td className="py-4 pr-6 font-mono text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      {row.feature}
+                    </td>
                     {[row.free, row.starter, row.pro, row.max].map((v, j) => (
-                      <td key={j} className="py-4 text-center font-mono text-xs"
-                        style={{ color: v === "—" ? "rgba(255,255,255,0.18)" : j === 2 ? "#FFE500" : "rgba(255,255,255,0.7)" }}>
+                      <td
+                        key={j}
+                        className="py-4 text-center font-mono text-xs"
+                        style={{
+                          color: v === "—"
+                            ? "rgba(255,255,255,0.15)"
+                            : j === 2
+                              ? "#FFE500"
+                              : "rgba(255,255,255,0.65)",
+                        }}
+                      >
                         {v}
                       </td>
                     ))}
@@ -323,56 +446,91 @@ export default function Pricing() {
       <DrawLine />
 
       {/* FAQ */}
-      <ClipReveal>
-        <section className="py-24 px-6" style={{ background: "#070708" }}>
-          <div className="max-w-3xl mx-auto">
-            <Reveal className="mb-12">
-              <h2 className="font-display font-bold text-white mb-2" style={{ fontSize: "clamp(24px, 3vw, 36px)" }}>
-                Frequently Asked
+      <section className="py-28 px-6" style={{ background: "#070708" }}>
+        <div className="max-w-3xl mx-auto">
+          <ClipReveal delay={0.05}>
+            <div className="mb-14">
+              <div
+                className="font-mono text-[10px] uppercase tracking-[0.22em] mb-4"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                Support
+              </div>
+              <h2
+                className="font-display font-bold text-white"
+                style={{ fontSize: "clamp(26px, 4vw, 44px)" }}
+              >
+                <SplitReveal text="Frequently asked." delay={0.04} />
               </h2>
-            </Reveal>
-            <div className="space-y-2">
-              {faqs.map((faq, i) => (
-                <motion.div
-                  key={i}
-                  className="rounded-lg overflow-hidden"
-                  style={{ border: "1px solid rgba(255,255,255,0.06)" }}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full flex items-center justify-between p-6 text-left"
-                    style={{ background: "#0f0f12" }}
-                  >
-                    <span className="font-mono text-sm text-white">{faq.q}</span>
-                    <motion.span animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                      <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.35)" }} />
-                    </motion.span>
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === i && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      >
-                        <div className="px-6 pb-6 font-mono text-xs leading-relaxed"
-                          style={{ background: "#0f0f12", color: "rgba(255,255,255,0.42)" }}>
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
             </div>
+          </ClipReveal>
+
+          <div className="space-y-2">
+            {faqs.map((faq, i) => (
+              <motion.div
+                key={i}
+                className="rounded-lg overflow-hidden"
+                style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between p-6 text-left transition-colors"
+                  style={{ background: openFaq === i ? "#111114" : "#0e0e11" }}
+                >
+                  <span className="font-mono text-sm text-white pr-8">{faq.q}</span>
+                  <motion.span
+                    animate={{ rotate: openFaq === i ? 180 : 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="shrink-0"
+                  >
+                    <ChevronDown size={15} style={{ color: "rgba(255,255,255,0.3)" }} />
+                  </motion.span>
+                </button>
+                <AnimatePresence>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div
+                        className="px-6 pb-6 font-mono text-xs leading-relaxed border-t"
+                        style={{
+                          background: "#111114",
+                          color: "rgba(255,255,255,0.4)",
+                          borderColor: "rgba(255,255,255,0.05)",
+                          paddingTop: 20,
+                        }}
+                      >
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
           </div>
-        </section>
-      </ClipReveal>
+
+          {/* Bottom CTA */}
+          <Reveal delay={0.2} className="mt-16 text-center">
+            <p className="font-mono text-xs mb-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Still have questions?
+            </p>
+            <a
+              href="mailto:support@directioner.app"
+              className="inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wide transition-colors"
+              style={{ color: "#FFE500" }}
+            >
+              Contact support <ArrowUpRight size={14} />
+            </a>
+          </Reveal>
+        </div>
+      </section>
     </div>
   );
 }

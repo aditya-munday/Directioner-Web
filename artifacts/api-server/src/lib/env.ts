@@ -1,6 +1,8 @@
 /**
- * Validates all required environment variables at startup.
- * The server will refuse to start if any required variable is missing or malformed.
+ * Validates environment variables at startup.
+ * In development, Supabase + DB vars are optional — the server boots in
+ * "degraded" mode (auth routes return 503) so the frontend can still be
+ * developed without a live database.
  */
 import { z } from "zod";
 
@@ -8,10 +10,11 @@ const envSchema = z.object({
   PORT: z
     .string()
     .regex(/^\d+$/, "PORT must be a numeric string")
+    .default("3001")
     .transform(Number),
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  VITE_SUPABASE_URL: z.string().url("VITE_SUPABASE_URL must be a valid URL"),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1, "VITE_SUPABASE_ANON_KEY is required"),
+  DATABASE_URL: z.string().optional().default(""),
+  VITE_SUPABASE_URL: z.string().optional().default(""),
+  VITE_SUPABASE_ANON_KEY: z.string().optional().default(""),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
@@ -31,7 +34,21 @@ function parseEnv(): Env {
       .join("\n");
     throw new Error(`Environment validation failed:\n${lines}`);
   }
-  return result.data;
+
+  const env = result.data;
+
+  // Warn in dev if optional vars are missing — fail hard in production
+  if (env.NODE_ENV === "production") {
+    const missing: string[] = [];
+    if (!env.DATABASE_URL) missing.push("DATABASE_URL");
+    if (!env.VITE_SUPABASE_URL) missing.push("VITE_SUPABASE_URL");
+    if (!env.VITE_SUPABASE_ANON_KEY) missing.push("VITE_SUPABASE_ANON_KEY");
+    if (missing.length) {
+      throw new Error(`Missing required production env vars: ${missing.join(", ")}`);
+    }
+  }
+
+  return env;
 }
 
 export const env = parseEnv();
