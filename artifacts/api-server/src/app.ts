@@ -103,7 +103,17 @@ app.use(
 );
 
 // ── Body parsers ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: "64kb" })); // tighter than 256kb
+// For the Razorpay webhook we need the raw body to verify the HMAC signature.
+// Capture it on /api/billing/webhook before JSON parsing replaces req.body.
+app.use("/api/billing/webhook", express.raw({ type: "application/json", limit: "256kb" }), (req, _res, next) => {
+  // Attach rawBody so the route handler can verify the Razorpay signature
+  (req as unknown as { rawBody: Buffer }).rawBody = req.body as Buffer;
+  // Re-parse as JSON so req.body is still a plain object in the handler
+  try { req.body = JSON.parse((req.body as Buffer).toString("utf-8")); } catch { req.body = {}; }
+  next();
+});
+
+app.use(express.json({ limit: "64kb" }));
 app.use(express.urlencoded({ extended: false, limit: "64kb" }));
 
 // ── Global rate limit ─────────────────────────────────────────────────────────

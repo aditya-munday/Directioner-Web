@@ -20,6 +20,9 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY: z.string().optional().default(""),
   // Service role key — required for secure server-side auth token verification
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(""),
+  // Razorpay — required for payment processing
+  RAZORPAY_KEY_ID:     z.string().optional().default(""),
+  RAZORPAY_KEY_SECRET: z.string().optional().default(""),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
@@ -51,9 +54,11 @@ function parseEnv(): Env {
   // Warn in dev if optional vars are missing — fail hard in production
   if (env.NODE_ENV === "production") {
     const missing: string[] = [];
-    if (!env.DATABASE_URL) missing.push("DATABASE_URL");
-    if (!env.SUPABASE_URL) missing.push("SUPABASE_URL (or VITE_SUPABASE_URL)");
+    if (!env.DATABASE_URL)             missing.push("DATABASE_URL");
+    if (!env.SUPABASE_URL)             missing.push("SUPABASE_URL (or VITE_SUPABASE_URL)");
     if (!env.SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+    if (!env.RAZORPAY_KEY_ID)          missing.push("RAZORPAY_KEY_ID");
+    if (!env.RAZORPAY_KEY_SECRET)      missing.push("RAZORPAY_KEY_SECRET");
     if (missing.length) {
       throw new Error(`Missing required production env vars: ${missing.join(", ")}`);
     }

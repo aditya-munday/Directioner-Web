@@ -1,0 +1,66 @@
+services:
+  # ── Frontend (Nginx + Vite static build) ─────────────────────────────────────
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        VITE_SUPABASE_URL:    ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_RAZORPAY_KEY_ID: ${VITE_RAZORPAY_KEY_ID}
+        VITE_API_URL:         /api   # proxied through Nginx
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── API Server (Express) ──────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      target: api
+    env_file: .env
+    environment:
+      NODE_ENV:         production
+      PORT:             "3001"
+    ports:
+      - "3001:3001"   # Expose for direct access / debugging
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/healthz"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # ── Local PostgreSQL (dev only — use Supabase in production) ──────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB:       directioner
+      POSTGRES_USER:     directioner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./supabase/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U directioner"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data:

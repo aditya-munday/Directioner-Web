@@ -6,7 +6,7 @@ import { Check, Download, CreditCard as CardIcon, RefreshCw, Zap, AlertCircle, A
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { openRazorpayCheckout } from "@/lib/razorpay";
+import { createOrder, openRazorpayCheckout, verifyPayment } from "@/lib/razorpay";
 import type { RazorpayResponse } from "@/lib/razorpay";
 import { TiltCard } from "@/components/animations/TiltCard";
 import { BorderBeam } from "@/components/animations/BorderBeam";
@@ -74,22 +74,11 @@ export default function Billing() {
     );
   };
 
-  const applyPlanChange = async (plan: typeof PLANS[number], paymentId?: string) => {
+  // Downgrade to free (no payment needed)
+  const applyFreeDowngrade = async () => {
     if (!supabase || !user) return;
-    await supabase.from("profiles").update({
-      tier: plan.id,
-      credits_limit: plan.credits === Infinity ? 9999999 : plan.credits,
-    }).eq("id", user.id);
-    await updateProfile({ tier: plan.id as any, credits_limit: plan.credits === Infinity ? 9999999 : plan.credits });
-    if (plan.price > 0) {
-      await supabase.from("billing_history").insert({
-        user_id: user.id,
-        amount: plan.price,
-        status: "paid",
-        description: `${plan.name} Plan — Monthly${paymentId ? ` (${paymentId.slice(0, 16)}…)` : ""}`,
-      });
-      await refetch();
-    }
+    await supabase.from("profiles").update({ tier: "free", credits_limit: 500 }).eq("id", user.id);
+    await updateProfile({ tier: "free" as any, credits_limit: 500 });
   };
 
   const handleUpgrade = async (planId: string) => {
@@ -98,25 +87,66 @@ export default function Billing() {
     setConfirmPlan(null);
     const plan = PLANS.find(p => p.id === planId)!;
     setPaymentError(null); setPaymentSuccess(null);
-    if (plan.price === 0) { await applyPlanChange(plan); return; }
+
+    // Downgrade to free — no payment required
+    if (plan.price === 0) {
+      try { await applyFreeDowngrade(); setPaymentSuccess("Downgraded to Free plan."); }
+      catch (e: any) { setPaymentError(e.message ?? "Failed to update plan."); }
+      return;
+    }
+
     setUpgrading(true); setSelectedPlan(planId);
     try {
-      let priceINR = plan.priceINR;
-      const code = coupon.trim().toUpperCase();
-      if (COUPONS[code]) priceINR = Math.round(priceINR * (1 - COUPONS[code].discount / 100));
+      // 1. Get auth token for API calls
+      if (!supabase) throw new Error("Supabase not configured — add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("You must be signed in to upgrade.");
+      const token = session.access_token;
+
+      // 2. Create server-side Razorpay order (amount verified server-side)
+      const couponCode = coupon.trim().toUpperCase() || undefined;
+      const order = await createOrder(planId, couponCode, token);
+
+      // 3. Handle 100%-off coupon (free after discount)
+      if (order.free) {
+        await applyFreeDowngrade();
+        setPaymentSuccess(`✓ Coupon applied! Upgraded to ${plan.name} plan for free.`);
+        await refetch();
+        return;
+      }
+
+      // 4. Open Razorpay checkout with the server-created order
       await openRazorpayCheckout({
-        planName: plan.name, priceINR,
-        userName: user?.full_name ?? user?.username,
-        userEmail: user?.email,
+        orderId:    order.orderId,
+        amount:     order.amount,
+        currency:   order.currency,
+        keyId:      order.keyId,
+        planName:   plan.name,
+        userName:   user?.full_name ?? user?.username,
+        userEmail:  user?.email,
         onSuccess: async (r: RazorpayResponse) => {
-          await applyPlanChange(plan, r.razorpay_payment_id);
-          setPaymentSuccess(`✓ Payment successful! Upgraded to ${plan.name} plan.`);
+          try {
+            // 5. Verify signature server-side — server upgrades tier + records billing
+            await verifyPayment(r, token);
+            // Refresh local user profile to reflect new tier
+            if (supabase) {
+              const { data: updated } = await supabase.from("profiles").select("*").eq("id", user!.id).single();
+              if (updated) await updateProfile(updated as any);
+            }
+            await refetch();
+            setPaymentSuccess(`✓ Payment successful! Upgraded to ${plan.name} plan.`);
+          } catch (ve: any) {
+            setPaymentError(`Payment received but verification failed: ${ve.message}. Contact support with payment ID: ${r.razorpay_payment_id}`);
+          } finally {
+            setUpgrading(false); setSelectedPlan(null);
+          }
         },
         onDismiss: () => { setUpgrading(false); setSelectedPlan(null); },
       });
     } catch (e: any) {
       setPaymentError(e.message ?? "Payment failed. Please try again.");
-    } finally { setUpgrading(false); setSelectedPlan(null); }
+      setUpgrading(false); setSelectedPlan(null);
+    }
   };
 
   const nextCharge = (() => {
