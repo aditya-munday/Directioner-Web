@@ -1,2 +1,0 @@
-- [Sonner + next-themes](sonner-next-themes.md) — sonner.tsx wraps Sonner with useTheme from next-themes; remove that dependency since no ThemeProvider is configured.
-- [pnpm workspace install](pnpm-workspace-install.md) — `pnpm install` at workspace root only installs root devDeps; package binaries live in per-package node_modules/.bin, and pnpm --filter <pkg> run <script> finds them correctly once installed.
