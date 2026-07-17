@@ -281,8 +281,10 @@ export function useDashboardStats(userId: string | undefined, servers: Server[] 
       .from('memory_nodes')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .then(({ count }: { count: number | null }) => setMemoryCount(count ?? 0))
-      .catch(() => { /* non-fatal: memory count is best-effort */ });
+      .then(
+        ({ count }: { count: number | null }) => setMemoryCount(count ?? 0),
+        () => { /* non-fatal: memory count is best-effort */ },
+      );
   }, [userId]);
 
   return {
@@ -324,5 +326,5 @@ export async function trackMessage(userId: string, serverId: string, isVoice = f
     p_text_messages: isVoice ? 0 : 1,
     p_voice_minutes: isVoice ? 1 : 0,
     p_credits: isVoice ? 5 : 2,
-  }).then(() => {}).catch(() => {}); // fire-and-forget
+  }).then(() => {}, () => {}); // fire-and-forget
 }

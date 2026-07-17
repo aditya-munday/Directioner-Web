@@ -3,6 +3,7 @@ import { motion, useScroll, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Menu, X, ArrowUpRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const NAV_LINKS = [
   { href: "/features",  label: "Features"  },
@@ -179,16 +180,21 @@ export function Navbar() {
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Theme toggle */}
+            <ThemeToggle size={15} />
+
             {/* Discord icon button */}
             <motion.a
-              href="#"
+              href="https://discord.com/invite/directioner"
+              target="_blank"
+              rel="noopener noreferrer"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-8 h-8 transition-colors"
               style={{ color: "rgba(255,255,255,0.4)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
-              aria-label="Join Discord"
+              aria-label="Join our Discord server"
             >
               <DiscordIcon size={16} />
             </motion.a>
@@ -228,7 +234,9 @@ export function Navbar() {
           <button
             className="md:hidden text-white/60 hover:text-white transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
           >
             <AnimatePresence mode="wait" initial={false}>
               {mobileOpen ? (
@@ -262,6 +270,10 @@ export function Navbar() {
         {mobileOpen && (
           <motion.div
             key="mobile-menu"
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
@@ -493,9 +505,9 @@ export function Footer() {
             © 2026 Directioner · All rights reserved
           </div>
           <div className="flex items-center gap-4 font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
-            <a href="#" className="hover:text-white/50 transition-colors">Privacy</a>
+            <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy</Link>
             <span>·</span>
-            <a href="#" className="hover:text-white/50 transition-colors">Terms</a>
+            <Link href="/terms" className="hover:text-white/50 transition-colors">Terms</Link>
           </div>
         </div>
       </div>

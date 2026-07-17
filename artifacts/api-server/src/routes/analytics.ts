@@ -138,7 +138,7 @@ router.post(
       })
       .returning();
 
-    res.status(201).json(row);
+    return res.status(201).json(row);
   }),
 );
 

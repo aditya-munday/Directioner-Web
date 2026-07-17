@@ -6,6 +6,7 @@ import analyticsRouter from "./analytics";
 import memoryRouter from "./memory";
 import activityRouter from "./activity";
 import billingRouter from "./billing";
+import contactRouter from "./contact";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use("/analytics", analyticsRouter);
 router.use("/memory-nodes", memoryRouter);
 router.use("/activity-feed", activityRouter);
 router.use("/billing", billingRouter);
+router.use(contactRouter);
 
 export default router;

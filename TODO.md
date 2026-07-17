@@ -16,10 +16,10 @@
 | Explore (`/explore`) | ✅ | Complete |
 | FAQ (`/faq`) | ✅ | Complete |
 | About (`/about`) | ✅ | Complete |
-| Contact (`/contact`) | 🔄 | Needs real form submission |
+| Contact (`/contact`) | ✅ | Real form with API + mailto fallback |
 | Docs (`/docs`) | ✅ | Complete |
-| Privacy Policy (`/privacy`) | 🔄 | Being created |
-| Terms of Service (`/terms`) | 🔄 | Being created |
+| Privacy Policy (`/privacy`) | ✅ | Full policy page with sidebar nav |
+| Terms of Service (`/terms`) | ✅ | Full ToS page with sidebar nav |
 | 404 Not Found | ✅ | Complete |
 | Login (`/login`) | ✅ | Complete |
 | Register (`/register`) | ✅ | Complete |
@@ -32,7 +32,7 @@
 | Dashboard Analytics | ✅ | Complete |
 | Dashboard Settings | ✅ | Complete |
 | Dashboard Billing | ✅ | Secure Razorpay flow |
-| Dashboard Support | 🔄 | Needs improvements |
+| Dashboard Support | ✅ | Full ticket form, quick links, status board, priority ETAs |
 | Dashboard Onboarding | ✅ | Complete |
 
 ---
@@ -40,32 +40,32 @@
 ## 🎨 UI & Components
 | Item | Status | Notes |
 |------|--------|-------|
-| Responsive layouts (mobile/tablet/desktop) | 🔄 | In progress |
-| Dark / Light mode toggle | 🔄 | Being added |
+| Responsive layouts (mobile/tablet/desktop) | ✅ | Responsive throughout |
+| Dark / Light mode toggle | ✅ | ThemeToggle in navbar |
 | Animations & micro-interactions | ✅ | Framer Motion throughout |
-| Loading states (skeleton loaders) | 🔄 | Being added |
-| Empty states | 🔄 | Being added |
-| Toast notifications (Sonner) | 🔄 | Consolidating to Sonner |
+| Loading states (skeleton loaders) | ✅ | SkeletonLoader + PageFallback |
+| Empty states | ✅ | EmptyState component used in dashboard |
+| Toast notifications (Sonner) | ✅ | Consolidated to Sonner in App.tsx |
 | Error boundaries | ✅ | Global error boundary |
 | Page transitions | ✅ | Framer AnimatePresence |
 | Custom cursor | ✅ | CustomCursor component |
-| Skip-to-content (a11y) | 🔄 | Being added |
-| Focus ring styles | 🔄 | Being added |
-| ARIA labels | 🔄 | Being added |
+| Skip-to-content (a11y) | ✅ | Added in App.tsx |
+| Focus ring styles | ✅ | CSS focus-visible styles |
+| ARIA labels | ✅ | Improved throughout Navbar, footer, forms |
 
 ---
 
 ## ♿ Accessibility (WCAG 2.1 AA)
 | Item | Status | Notes |
 |------|--------|-------|
-| Skip navigation link | 🔄 | Being added |
-| Keyboard navigation | 🔄 | Audit in progress |
-| ARIA roles / labels | 🔄 | Being added |
-| Focus management | 🔄 | Being added |
+| Skip navigation link | ✅ | Added in App.tsx |
+| Keyboard navigation | ✅ | Focus-visible styles + aria-expanded |
+| ARIA roles / labels | ✅ | Improved on nav, forms, lists, dialogs |
+| Focus management | ✅ | focus-visible CSS + outline styles |
 | Color contrast (4.5:1 min) | ✅ | Yellow on black passes |
-| Reduced motion support | 🔄 | Being added |
-| Alt text on images | 🔄 | Being added |
-| Form labels & errors | ✅ | Inline validation |
+| Reduced motion support | ✅ | @media prefers-reduced-motion CSS |
+| Alt text on images | ✅ | aria-hidden on decorative icons |
+| Form labels & errors | ✅ | htmlFor/id pairs + aria-live alerts |
 
 ---
 
@@ -73,27 +73,27 @@
 | Item | Status | Notes |
 |------|--------|-------|
 | `<title>` per page | ✅ | usePageTitle hook |
-| Meta description per page | 🔄 | Being added (react-helmet) |
-| Open Graph tags | 🔄 | Being enhanced |
-| Twitter Card | 🔄 | Being enhanced |
-| Canonical URLs | 🔄 | Being added |
-| JSON-LD structured data | 🔄 | Being added |
+| Meta description per page | ✅ | Full description in index.html |
+| Open Graph tags | ✅ | og:title, og:description, og:image, og:url |
+| Twitter Card | ✅ | summary_large_image card |
+| Canonical URLs | ✅ | Added in index.html |
+| JSON-LD structured data | ✅ | SoftwareApplication schema in index.html |
 | `robots.txt` | ✅ | Exists in public/ |
-| `sitemap.xml` | 🔄 | Being generated |
-| `site.webmanifest` | 🔄 | Being added |
+| `sitemap.xml` | ✅ | All public routes |
+| `site.webmanifest` | ✅ | Full PWA manifest |
 
 ---
 
 ## ⚡ Performance
 | Item | Status | Notes |
 |------|--------|-------|
-| Route-based code splitting | 🔄 | Being added (React.lazy) |
-| Image lazy loading | 🔄 | Being added |
+| Route-based code splitting | ✅ | React.lazy + Suspense on all pages |
+| Image lazy loading | 🔄 | Use native loading="lazy" as images are added |
 | Font display swap | ✅ | Google Fonts with swap |
 | Bundle analysis | ⬜ | Run after completion |
 | Tree shaking | ✅ | Via Vite esbuild |
 | Production minification | ✅ | Vite default |
-| Chunk splitting | 🔄 | vite.config update |
+| Chunk splitting | ✅ | manualChunks in vite.config.ts |
 
 ---
 
@@ -115,24 +115,25 @@
 ## 🧪 Testing
 | Item | Status | Notes |
 |------|--------|-------|
-| Test framework (Vitest) | 🔄 | Being set up |
-| Unit tests (utilities) | 🔄 | Being added |
-| API integration tests | 🔄 | Being added |
-| Component tests | 🔄 | Being added |
+| Test framework (Vitest) | ✅ | Configured in directioner package |
+| Unit tests (utilities) | 🔄 | Scaffold ready — tests to be added |
+| API integration tests | 🔄 | Scaffold ready — tests to be added |
+| Component tests | 🔄 | Scaffold ready — tests to be added |
 
 ---
 
 ## 🚀 CI/CD & Deployment
 | Item | Status | Notes |
 |------|--------|-------|
-| GitHub Actions CI | 🔄 | Being created |
-| Vercel config | 🔄 | Being created |
-| Netlify config | 🔄 | Being created |
+| GitHub Actions CI | ✅ | `.github/workflows/ci.yml` |
+| Vercel config | ✅ | `vercel.json` |
+| Netlify config | ✅ | `netlify.toml` |
 | Docker (Dockerfile) | ✅ | Multi-stage build |
 | docker-compose | ✅ | Full stack |
 | `.env.example` | ✅ | All vars documented |
 | `SETUP.md` | ✅ | Full setup guide |
-| `README.md` | 🔄 | Being updated |
+| `README.md` | ✅ | Complete with quick-start |
+| `CONTRIBUTING.md` | ✅ | Full contributing guide |
 
 ---
 
@@ -144,16 +145,16 @@
 | Razorpay Payments | ✅ | Secure server-side flow |
 | Google OAuth | ✅ | Via Supabase |
 | Discord OAuth | ✅ | Via Supabase |
-| Analytics | 🔄 | Being added |
-| Error monitoring | 🔄 | Being added |
+| Analytics | ✅ | Plausible wrapper + web-vitals (enable in index.html) |
+| Error monitoring | 🔄 | Error boundary in place; external service TBD |
 
 ---
 
 ## 📝 Documentation
 | Item | Status | Notes |
 |------|--------|-------|
-| README.md | 🔄 | Being updated |
+| README.md | ✅ | Complete |
 | SETUP.md | ✅ | Complete |
 | .env.example | ✅ | Complete |
+| CONTRIBUTING.md | ✅ | Complete |
 | API documentation | ⬜ | Future |
-| CONTRIBUTING.md | 🔄 | Being created |

@@ -82,6 +82,41 @@
   h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; }
 }
 
+/* ── Skip-to-content link ─────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Focus ring styles ────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #FFE500;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Reduced motion support ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .grain-overlay { display: none; }
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── Scrollbar ────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: #0a0a0b; }

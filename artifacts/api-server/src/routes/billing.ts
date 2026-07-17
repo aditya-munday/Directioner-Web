@@ -94,7 +94,7 @@ router.post(
     const plan = PLANS[planId];
 
     // Apply coupon discount
-    let priceINR = plan.priceINR;
+    let priceINR: number = plan.priceINR;
     if (couponCode && COUPONS[couponCode] !== undefined) {
       priceINR = Math.round(priceINR * (1 - COUPONS[couponCode] / 100));
     }
@@ -130,7 +130,7 @@ router.post(
       });
     }
 
-    res.json({
+    return res.json({
       orderId:  order.id,
       amount:   amountPaise,
       currency: "INR",
@@ -264,7 +264,7 @@ router.post(
       console.info("[webhook] payment.captured received", JSON.stringify(event.payload ?? {}).slice(0, 256));
     }
 
-    res.status(200).json({ received: true });
+    return res.status(200).json({ received: true });
   }),
 );
 
