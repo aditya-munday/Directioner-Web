@@ -3,6 +3,12 @@
 > Last updated: 2026-07-17
 > Legend: ✅ Done · 🔄 In Progress · ⬜ Pending · ❌ Skipped (N/A)
 
+### Recent fixes:
+- Fixed sonner.tsx to remove next-themes dependency (hardcoded dark theme)
+- Added manualChunks to vite.config.ts for bundle optimization
+- Completed SEO metadata in index.html (OG, Twitter cards, JSON-LD)
+- Added accessibility styles (skip-to-content, focus rings, reduced motion) in index.css
+
 ---
 
 ## 📄 Pages & Routes
