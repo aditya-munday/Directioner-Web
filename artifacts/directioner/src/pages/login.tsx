@@ -287,7 +287,6 @@ export default function Login() {
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  onBlur={() => setTouched(t => ({ ...t, email: true }))}
                   className="w-full px-4 py-3 font-mono text-sm text-white focus:outline-none transition-all"
                   style={{
                     background: "#0f0f12",
