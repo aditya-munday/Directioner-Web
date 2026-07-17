@@ -6,7 +6,7 @@ import { requireAuth } from "../middlewares/auth";
 import { asyncHandler } from "../lib/async-handler";
 import { validate } from "../lib/validate";
 import { notFoundError } from "../lib/errors";
-import { writeLimiter } from "../middlewares/rate-limit";
+import { writeLimiter, perUserWriteLimiter } from "../middlewares/rate-limit";
 
 const router = Router();
 
@@ -22,9 +22,9 @@ const listQuery = z.object({
 
 const createBody = z.object({
   serverId:   z.string().uuid().nullable().optional(),
-  content:    z.string().min(1).max(4096),
+  content:    z.string().min(1).max(4096).trim(),
   scope:      z.enum(["user", "server", "global"]).default("server"),
-  targetUser: z.string().max(128).nullable().optional(),
+  targetUser: z.string().max(128).trim().nullable().optional(),
 }).strict();
 
 // ── GET /api/memory-nodes ─────────────────────────────────────────────────────
@@ -56,6 +56,7 @@ router.post(
   "/",
   requireAuth,
   writeLimiter,
+  perUserWriteLimiter,
   validate(createBody),
   asyncHandler(async (req, res) => {
     const { serverId, content, scope, targetUser } =
@@ -81,16 +82,36 @@ router.delete(
   "/:id",
   requireAuth,
   writeLimiter,
+  perUserWriteLimiter,
   validate(uuidParam, "params"),
   asyncHandler(async (req, res) => {
+    // Ownership enforced by requiring matching userId
     const [row] = await db
       .delete(memoryNodes)
       .where(
-        and(eq(memoryNodes.id, req.params.id as string), eq(memoryNodes.userId, req.userId)),
+        and(
+          eq(memoryNodes.id, req.params.id as string),
+          eq(memoryNodes.userId, req.userId),
+        ),
       )
       .returning();
 
     if (!row) throw notFoundError("Memory node not found");
+    res.status(204).send();
+  }),
+);
+
+// ── DELETE /api/memory-nodes (all for user) ───────────────────────────────────
+router.delete(
+  "/",
+  requireAuth,
+  writeLimiter,
+  perUserWriteLimiter,
+  asyncHandler(async (req, res) => {
+    await db
+      .delete(memoryNodes)
+      .where(eq(memoryNodes.userId, req.userId));
+
     res.status(204).send();
   }),
 );

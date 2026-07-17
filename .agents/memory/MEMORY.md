@@ -1,0 +1,5 @@
+- [Codebase architecture](architecture.md) — monorepo: directioner frontend (5000), api-server (8080), shared lib/db + lib/api-zod
+- [Security fixes applied](security-fixes.md) — helmet, service-role key, token trimming, ownership filters, server count limits
+- [Analytics NULL upsert](analytics-null-upsert.md) — PostgreSQL NULL≠NULL in unique constraints; null serverId needs manual SELECT+UPDATE+INSERT
+- [Rate limiter IPv6](rate-limiter-ipv6.md) — perUserWriteLimiter must use validate.keyGeneratorIpFallback:false when keying by userId not IP
+- [DB graceful degradation](db-graceful-degradation.md) — lib/db/index.ts must not throw at import time; use Proxy stub when DATABASE_URL absent

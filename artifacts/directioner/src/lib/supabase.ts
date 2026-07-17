@@ -22,7 +22,9 @@ try {
   console.warn('Failed to initialize Supabase client:', e);
 }
 
-export const supabase = supabaseInstance as any;
+// Export as SupabaseClient so consumers get full type safety.
+// Callers must guard against null (supabase configured = true) before use.
+export const supabase = supabaseInstance as SupabaseClient;
 
 // ─── Database Types ──────────────────────────────────────────────────────────
 

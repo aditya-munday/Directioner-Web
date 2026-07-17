@@ -68,14 +68,14 @@ export default function BotDetails() {
   const botActivity = activityFeed.filter(a => !bot || a.server_id === bot.id);
 
   const handleToggle = async () => {
-    if (!bot) return; setSaving(true);
-    await updateServer(bot.id, { status: bot.status === "online" ? "offline" : "online" });
+    if (!bot || !user) return; setSaving(true);
+    await updateServer(user.id, bot.id, { status: bot.status === "online" ? "offline" : "online" });
     await refetch(); setSaving(false);
   };
 
   const handleModeChange = async (mode: string) => {
-    if (!bot) return;
-    await updateServer(bot.id, { ai_mode: mode }); await refetch();
+    if (!bot || !user) return;
+    await updateServer(user.id, bot.id, { ai_mode: mode }); await refetch();
   };
 
   const handleAddMemory = async () => {
@@ -87,7 +87,7 @@ export default function BotDetails() {
 
   const handleDeleteMemory = async (memId: string) => {
     if (!user || !bot) return;
-    await deleteMemoryNode(memId);
+    await deleteMemoryNode(user.id, memId);
     await refetchMem();
   };
 

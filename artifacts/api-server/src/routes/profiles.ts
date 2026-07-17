@@ -6,7 +6,7 @@ import { requireAuth } from "../middlewares/auth";
 import { asyncHandler } from "../lib/async-handler";
 import { validate } from "../lib/validate";
 import { AppError, forbidden, notFoundError } from "../lib/errors";
-import { writeLimiter } from "../middlewares/rate-limit";
+import { writeLimiter, perUserWriteLimiter } from "../middlewares/rate-limit";
 
 const router = Router();
 
@@ -15,18 +15,19 @@ const router = Router();
 const uuidParam = z.object({ id: z.string().uuid("id must be a valid UUID") });
 
 const patchBody = z.object({
-  username:     z.string().min(1).max(64).optional(),
-  fullName:     z.string().max(128).nullable().optional(),
-  avatarUrl:    z.string().url().nullable().optional(),
-  tier:         z.enum(["free", "basic", "pro", "max"]).optional(),
-  creditsUsed:  z.number().int().min(0).optional(),
-  creditsLimit: z.number().int().min(0).optional(),
+  username:     z.string().min(1).max(64).trim().optional(),
+  fullName:     z.string().max(128).trim().nullable().optional(),
+  avatarUrl:    z.string().url().max(2048).nullable().optional(),
+  // Only internal/admin usage should change tier/credits — disallow in user-facing PATCH
+  // tier:         z.enum(["free", "basic", "pro", "max"]).optional(),
+  // creditsUsed:  z.number().int().min(0).optional(),
+  // creditsLimit: z.number().int().min(0).optional(),
 }).strict();
 
 const syncBody = z.object({
-  username:  z.string().min(1).max(64).optional(),
-  fullName:  z.string().max(128).nullable().optional(),
-  avatarUrl: z.string().url().nullable().optional(),
+  username:  z.string().min(1).max(64).trim().optional(),
+  fullName:  z.string().max(128).trim().nullable().optional(),
+  avatarUrl: z.string().url().max(2048).nullable().optional(),
 });
 
 // ── GET /api/profiles/me ──────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ router.post(
   "/me/sync",
   requireAuth,
   writeLimiter,
+  perUserWriteLimiter,
   validate(syncBody),
   asyncHandler(async (req, res) => {
     const { username, fullName, avatarUrl } = req.body as z.infer<typeof syncBody>;
@@ -83,6 +85,7 @@ router.get(
   requireAuth,
   validate(uuidParam, "params"),
   asyncHandler(async (req, res) => {
+    // Users can only fetch their own profile
     if (req.params.id !== req.userId) throw forbidden();
 
     const [profile] = await db
@@ -101,9 +104,11 @@ router.patch(
   "/:id",
   requireAuth,
   writeLimiter,
+  perUserWriteLimiter,
   validate(uuidParam, "params"),
   validate(patchBody),
   asyncHandler(async (req, res) => {
+    // Users can only modify their own profile
     if (req.params.id !== req.userId) throw forbidden();
 
     const body = req.body as z.infer<typeof patchBody>;

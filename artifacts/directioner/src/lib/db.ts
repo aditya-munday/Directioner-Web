@@ -14,8 +14,6 @@ function useQuery<T extends unknown[]>(
 ) {
   // Default to an EMPTY ARRAY (not null) so consumers that destructure
   // `const { data = [] }` actually receive [] on the initial render.
-  // Initializing to null made every dashboard page crash with
-  // `null.map` / `null.reduce` / `null.length` before the fetch resolved.
   const [data, setData] = useState<T>([] as unknown as T);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +37,7 @@ function useQuery<T extends unknown[]>(
 export function useServers(userId: string | undefined) {
   return useQuery<Server[]>(
     async () => {
-      if (!userId) return [];
+      if (!userId || !supabase) return [];
       const { data, error } = await supabase
         .from('servers')
         .select('*')
@@ -53,6 +51,7 @@ export function useServers(userId: string | undefined) {
 }
 
 export async function addServer(userId: string, serverName: string, discordServerId: string) {
+  if (!supabase) throw new Error('Supabase not configured');
   const { data, error } = await supabase
     .from('servers')
     .insert({
@@ -69,13 +68,25 @@ export async function addServer(userId: string, serverName: string, discordServe
   return data as Server;
 }
 
-export async function updateServer(serverId: string, updates: Partial<Server>) {
-  const { error } = await supabase.from('servers').update(updates).eq('id', serverId);
+export async function updateServer(userId: string, serverId: string, updates: Partial<Server>) {
+  if (!supabase) throw new Error('Supabase not configured');
+  // Enforce ownership: only update if user_id matches
+  const { error } = await supabase
+    .from('servers')
+    .update(updates)
+    .eq('id', serverId)
+    .eq('user_id', userId); // ownership check
   if (error) throw error;
 }
 
-export async function deleteServer(serverId: string) {
-  const { error } = await supabase.from('servers').delete().eq('id', serverId);
+export async function deleteServer(userId: string, serverId: string) {
+  if (!supabase) throw new Error('Supabase not configured');
+  // Enforce ownership: only delete if user_id matches
+  const { error } = await supabase
+    .from('servers')
+    .delete()
+    .eq('id', serverId)
+    .eq('user_id', userId); // ownership check
   if (error) throw error;
 }
 
@@ -92,7 +103,7 @@ export function useAnalytics(userId: string | undefined, range: AnalyticsRange) 
   const since = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
 
   const loadData = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    if (!userId || !supabase) { setLoading(false); return; }
     setLoading(true);
     const { data: rows, error: err } = await supabase
       .from('analytics_daily')
@@ -108,7 +119,7 @@ export function useAnalytics(userId: string | undefined, range: AnalyticsRange) 
     loadData();
 
     // Subscribe to real-time inserts/updates for this user's analytics
-    if (userId) {
+    if (userId && supabase) {
       channelRef.current = supabase
         .channel(`analytics:${userId}`)
         .on(
@@ -120,7 +131,7 @@ export function useAnalytics(userId: string | undefined, range: AnalyticsRange) 
     }
 
     return () => {
-      if (channelRef.current) {
+      if (channelRef.current && supabase) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
@@ -145,7 +156,7 @@ export function computeAnalyticsStats(data: AnalyticsDaily[]) {
 export function useMemoryNodes(userId: string | undefined, serverId?: string) {
   return useQuery<MemoryNode[]>(
     async () => {
-      if (!userId) return [];
+      if (!userId || !supabase) return [];
       let q = supabase.from('memory_nodes').select('*').eq('user_id', userId);
       if (serverId) q = q.eq('server_id', serverId);
       const { data, error } = await q.order('created_at', { ascending: false });
@@ -156,7 +167,14 @@ export function useMemoryNodes(userId: string | undefined, serverId?: string) {
   );
 }
 
-export async function addMemoryNode(userId: string, serverId: string | null, content: string, scope: 'user' | 'server' | 'global' = 'server', targetUser?: string) {
+export async function addMemoryNode(
+  userId: string,
+  serverId: string | null,
+  content: string,
+  scope: 'user' | 'server' | 'global' = 'server',
+  targetUser?: string,
+) {
+  if (!supabase) throw new Error('Supabase not configured');
   const { data, error } = await supabase
     .from('memory_nodes')
     .insert({ user_id: userId, server_id: serverId, content, scope, target_user: targetUser ?? null })
@@ -166,8 +184,23 @@ export async function addMemoryNode(userId: string, serverId: string | null, con
   return data as MemoryNode;
 }
 
-export async function deleteMemoryNode(nodeId: string) {
-  const { error } = await supabase.from('memory_nodes').delete().eq('id', nodeId);
+export async function deleteMemoryNode(userId: string, nodeId: string) {
+  if (!supabase) throw new Error('Supabase not configured');
+  // Enforce ownership: only delete nodes belonging to this user
+  const { error } = await supabase
+    .from('memory_nodes')
+    .delete()
+    .eq('id', nodeId)
+    .eq('user_id', userId); // ownership check
+  if (error) throw error;
+}
+
+export async function deleteAllMemoryNodes(userId: string) {
+  if (!supabase) throw new Error('Supabase not configured');
+  const { error } = await supabase
+    .from('memory_nodes')
+    .delete()
+    .eq('user_id', userId);
   if (error) throw error;
 }
 
@@ -178,7 +211,7 @@ export function useActivityFeed(userId: string | undefined, limit = 12) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const loadData = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    if (!userId || !supabase) { setLoading(false); return; }
     const { data: rows } = await supabase
       .from('activity_feed')
       .select('*')
@@ -192,7 +225,7 @@ export function useActivityFeed(userId: string | undefined, limit = 12) {
   useEffect(() => {
     loadData();
 
-    if (userId) {
+    if (userId && supabase) {
       channelRef.current = supabase
         .channel(`activity:${userId}`)
         .on(
@@ -206,7 +239,7 @@ export function useActivityFeed(userId: string | undefined, limit = 12) {
     }
 
     return () => {
-      if (channelRef.current) { supabase.removeChannel(channelRef.current); }
+      if (channelRef.current && supabase) { supabase.removeChannel(channelRef.current); }
     };
   }, [loadData, userId, limit]);
 
@@ -217,7 +250,7 @@ export function useActivityFeed(userId: string | undefined, limit = 12) {
 export function useBilling(userId: string | undefined) {
   return useQuery<BillingRecord[]>(
     async () => {
-      if (!userId) return [];
+      if (!userId || !supabase) return [];
       const { data, error } = await supabase
         .from('billing_history')
         .select('*')
@@ -243,7 +276,7 @@ export function useDashboardStats(userId: string | undefined, servers: Server[] 
   const [memoryCount, setMemoryCount] = useState(0);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !supabase) return;
     supabase
       .from('memory_nodes')
       .select('id', { count: 'exact', head: true })
@@ -260,7 +293,7 @@ export function useDashboardStats(userId: string | undefined, servers: Server[] 
   };
 }
 
-// ─── Simulated realtime: insert a new activity event ─────────────────────────
+// ─── Push a new activity event ────────────────────────────────────────────────
 export async function pushActivityEvent(
   userId: string,
   serverId: string | null,
@@ -269,6 +302,7 @@ export async function pushActivityEvent(
   actor: string | null,
   details: string,
 ) {
+  if (!supabase) return;
   await supabase.from('activity_feed').insert({
     user_id: userId,
     server_id: serverId,
@@ -281,6 +315,7 @@ export async function pushActivityEvent(
 
 // ─── Increment analytics for today ───────────────────────────────────────────
 export async function trackMessage(userId: string, serverId: string, isVoice = false) {
+  if (!supabase) return;
   const today = new Date().toISOString().split('T')[0];
   await supabase.rpc('increment_analytics', {
     p_user_id: userId,

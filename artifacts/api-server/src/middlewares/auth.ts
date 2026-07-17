@@ -9,6 +9,10 @@ declare global {
   }
 }
 
+// Very rough JWT shape check — rejects obviously malformed tokens before
+// making a network round-trip to Supabase.
+const JWT_PATTERN = /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/;
+
 export async function requireAuth(
   req: Request,
   res: Response,
@@ -17,7 +21,7 @@ export async function requireAuth(
   if (!supabaseConfigured || !supabase) {
     res.status(503).json({
       error: "Authentication unavailable — Supabase not configured",
-      hint: "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables",
+      hint: "Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and DATABASE_URL environment variables",
     });
     return;
   }
@@ -28,7 +32,20 @@ export async function requireAuth(
     return;
   }
 
-  const token = authHeader.slice(7);
+  const token = authHeader.slice(7).trim();
+
+  // Reject malformed tokens immediately without a Supabase round-trip
+  if (!token || !JWT_PATTERN.test(token)) {
+    res.status(401).json({ error: "Malformed token" });
+    return;
+  }
+
+  // Token length sanity check (Supabase JWTs are < 4 KB)
+  if (token.length > 4096) {
+    res.status(401).json({ error: "Token too large" });
+    return;
+  }
+
   const { data, error } = await supabase.auth.getUser(token);
 
   if (error || !data.user) {

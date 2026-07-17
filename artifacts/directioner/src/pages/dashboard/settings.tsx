@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Eye, EyeOff, Copy, RefreshCw, Check, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { deleteAllMemoryNodes } from "@/lib/db";
 
 const BORDER = "rgba(255,255,255,0.06)";
 const CARD   = "#0f0f12";
@@ -50,15 +51,16 @@ function SectionTitle({ title }: { title: string }) {
 
 export default function Settings() {
   usePageTitle("Settings");
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
 
   // Profile
   const [username, setUsername]   = useState(user?.username ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
   const [savedProfile, setSavedProfile]   = useState(false);
+  const [profileError, setProfileError]   = useState("");
 
-  // Notifications
+  // Notifications (UI only — no backend yet)
   const [notifs, setNotifs] = useState({
     email_alerts: true, discord_dm: false, billing_receipts: true, weekly_report: false, usage_warnings: true,
   });
@@ -71,25 +73,27 @@ export default function Settings() {
   const [showPw, setShowPw]       = useState(false);
   const [savingPw, setSavingPw]   = useState(false);
   const [savedPw, setSavedPw]     = useState(false);
+  const [pwError, setPwError]     = useState("");
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
   const [apiKeyCopied, setApiKeyCopied]   = useState(false);
   const MOCK_API_KEY = `dk_${user?.id?.slice(0, 8) ?? "xxxxxxxx"}xxxxxxxxxxxxxxxxxxx`;
 
   // Danger zone
-  const [deleteMemInput, setDeleteMemInput]     = useState("");
-  const [deleteAccInput, setDeleteAccInput]     = useState("");
-  const [deletingMem, setDeletingMem]           = useState(false);
-  const [deletingAcc, setDeletingAcc]           = useState(false);
-  const [memDeleted, setMemDeleted]             = useState(false);
+  const [deleteMemInput, setDeleteMemInput] = useState("");
+  const [deleteAccInput, setDeleteAccInput] = useState("");
+  const [deletingMem, setDeletingMem]       = useState(false);
+  const [deletingAcc, setDeletingAcc]       = useState(false);
+  const [memDeleted, setMemDeleted]         = useState(false);
+  const [dangerError, setDangerError]       = useState("");
 
   useEffect(() => { setUsername(user?.username ?? ""); }, [user]);
 
   const pwStrength = (() => {
     let s = 0;
-    if (password.length > 7)           s += 25;
-    if (/[A-Z]/.test(password))         s += 25;
-    if (/[0-9]/.test(password))         s += 25;
-    if (/[^A-Za-z0-9]/.test(password))  s += 25;
+    if (password.length >= 8)            s += 25;
+    if (/[A-Z]/.test(password))          s += 25;
+    if (/[0-9]/.test(password))          s += 25;
+    if (/[^A-Za-z0-9]/.test(password))   s += 25;
     return s;
   })();
   const strengthColor = pwStrength < 50 ? "#f43f5e" : pwStrength < 75 ? "#f97316" : "#10b981";
@@ -97,30 +101,43 @@ export default function Settings() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = username.trim();
+    if (!trimmed) { setProfileError("Username cannot be empty."); return; }
+    if (trimmed.length > 64) { setProfileError("Username too long (max 64 characters)."); return; }
+    setProfileError("");
     setSavingProfile(true);
     try {
-      await updateProfile({ username: username.trim() });
+      await updateProfile({ username: trimmed });
       setSavedProfile(true); setTimeout(() => setSavedProfile(false), 2500);
-    } catch {} finally { setSavingProfile(false); }
+    } catch (err: unknown) {
+      setProfileError(err instanceof Error ? err.message : "Failed to save profile.");
+    } finally { setSavingProfile(false); }
   };
 
   const handleSaveNotifs = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingNotifs(true);
-    await new Promise(r => setTimeout(r, 600));
+    // Notification preferences stored locally for now (no backend endpoint yet)
+    await new Promise(r => setTimeout(r, 400));
     setSavingNotifs(false); setSavedNotifs(true);
     setTimeout(() => setSavedNotifs(false), 2500);
   };
 
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPw) return;
+    setPwError("");
+    if (password.length < 8) { setPwError("Password must be at least 8 characters."); return; }
+    if (password !== confirmPw) { setPwError("Passwords do not match."); return; }
+    if (!supabase) { setPwError("Supabase not configured."); return; }
     setSavingPw(true);
     try {
-      await supabase.auth.updateUser({ password });
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
       setPassword(""); setConfirmPw("");
       setSavedPw(true); setTimeout(() => setSavedPw(false), 2500);
-    } catch {} finally { setSavingPw(false); }
+    } catch (err: unknown) {
+      setPwError(err instanceof Error ? err.message : "Failed to update password.");
+    } finally { setSavingPw(false); }
   };
 
   const copyApiKey = () => {
@@ -130,10 +147,34 @@ export default function Settings() {
 
   const handleDeleteMemory = async () => {
     if (deleteMemInput !== "DELETE") return;
+    if (!user?.id) return;
+    setDangerError("");
     setDeletingMem(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setDeletingMem(false); setMemDeleted(true); setDeleteMemInput("");
-    setTimeout(() => setMemDeleted(false), 3000);
+    try {
+      await deleteAllMemoryNodes(user.id);
+      setMemDeleted(true); setDeleteMemInput("");
+      setTimeout(() => setMemDeleted(false), 3000);
+    } catch (err: unknown) {
+      setDangerError(err instanceof Error ? err.message : "Failed to delete memory nodes.");
+    } finally { setDeletingMem(false); }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteAccInput !== "DELETE") return;
+    if (!user?.id || !supabase) return;
+    setDangerError("");
+    setDeletingAcc(true);
+    try {
+      // Delete all user data, then sign out (Supabase cascade deletes handle DB rows)
+      await deleteAllMemoryNodes(user.id);
+      // Sign out first so the session is invalidated
+      await logout();
+      // Note: full account deletion requires a Supabase admin API call from the server
+      // For now we sign the user out and redirect — server-side deletion can be a follow-up
+    } catch (err: unknown) {
+      setDangerError(err instanceof Error ? err.message : "Failed to delete account.");
+      setDeletingAcc(false);
+    }
   };
 
   const fieldCls = "w-full px-4 py-3 font-mono text-sm text-white focus:outline-none transition-colors";
@@ -215,10 +256,17 @@ export default function Settings() {
                   <div>
                     <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
                       style={{ color: "rgba(255,255,255,0.35)" }}>Display Name / Username</label>
-                    <input value={username} onChange={e => setUsername(e.target.value)}
+                    <input
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      maxLength={64}
                       className={fieldCls} style={fieldStyle}
                       onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }}
-                      onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }} />
+                      onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                    />
+                    {profileError && (
+                      <p className="font-mono text-[10px] mt-1" style={{ color: "#f43f5e" }}>{profileError}</p>
+                    )}
                   </div>
                   <div>
                     <label className="font-mono text-[10px] uppercase tracking-widest block mb-2"
@@ -277,6 +325,7 @@ export default function Settings() {
                       <div className="relative">
                         <input type={showPw ? "text" : "password"} value={password}
                           onChange={e => setPassword(e.target.value)}
+                          placeholder="Min. 8 characters"
                           className={`${fieldCls} pr-12`} style={fieldStyle}
                           onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,229,0,0.4)"; }}
                           onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }} />
@@ -312,7 +361,13 @@ export default function Settings() {
                         <div className="font-mono text-[9px] mt-1" style={{ color: "#f43f5e" }}>Passwords don't match</div>
                       )}
                     </div>
-                    <SaveBtn saving={savingPw} saved={savedPw} disabled={!password || password !== confirmPw} />
+                    {pwError && (
+                      <div className="font-mono text-xs px-4 py-3"
+                        style={{ background: "rgba(244,63,94,0.07)", border: "1px solid rgba(244,63,94,0.25)", color: "#f43f5e" }}>
+                        {pwError}
+                      </div>
+                    )}
+                    <SaveBtn saving={savingPw} saved={savedPw} disabled={!password || password !== confirmPw || password.length < 8} />
                   </form>
                   {/* API Key */}
                   <div className="space-y-5 p-8 rounded-xl"
@@ -364,9 +419,17 @@ export default function Settings() {
               {/* DANGER ZONE */}
               {activeTab === "danger" && (
                 <div className="space-y-5">
-                  {/* Delete memory nodes */}
                   <div className="p-8 rounded-xl" style={{ background: CARD, border: `1px solid rgba(244,63,94,0.2)` }}>
                     <SectionTitle title="Danger Zone" />
+
+                    {dangerError && (
+                      <div className="mb-4 p-3 font-mono text-xs rounded"
+                        style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.25)", color: "#f43f5e" }}>
+                        {dangerError}
+                      </div>
+                    )}
+
+                    {/* Delete memory nodes */}
                     <div className="mb-8">
                       <div className="flex items-start gap-3 mb-4">
                         <Trash2 size={16} style={{ color: "#f43f5e" }} className="shrink-0 mt-0.5" />
@@ -406,13 +469,15 @@ export default function Settings() {
                         </>
                       )}
                     </div>
+
+                    {/* Delete account */}
                     <div className="pt-6" style={{ borderTop: `1px solid rgba(244,63,94,0.15)` }}>
                       <div className="flex items-start gap-3 mb-4">
                         <AlertTriangle size={16} style={{ color: "#f43f5e" }} className="shrink-0 mt-0.5" />
                         <div>
                           <div className="font-mono text-sm text-white font-bold mb-1">Delete Account</div>
                           <div className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            Permanently delete your account, all data, bots, and billing records. This is irreversible.
+                            Signs you out and clears your local data. Full account deletion requires contacting support.
                           </div>
                         </div>
                       </div>
@@ -427,6 +492,7 @@ export default function Settings() {
                           style={{ background: "#070708", border: "1px solid rgba(244,63,94,0.25)" }}
                         />
                         <button
+                          onClick={handleDeleteAccount}
                           disabled={deleteAccInput !== "DELETE" || deletingAcc}
                           className="px-5 font-mono text-xs uppercase font-bold transition-all disabled:opacity-40 flex items-center gap-2"
                           style={{ background: deleteAccInput === "DELETE" ? "#f43f5e" : "transparent", border: "1px solid rgba(244,63,94,0.5)", color: deleteAccInput === "DELETE" ? "#fff" : "#f43f5e" }}>

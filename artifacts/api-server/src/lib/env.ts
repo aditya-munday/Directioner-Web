@@ -13,8 +13,13 @@ const envSchema = z.object({
     .default("3001")
     .transform(Number),
   DATABASE_URL: z.string().optional().default(""),
+  // Accept both VITE_SUPABASE_* (frontend-shared) and plain SUPABASE_* names
   VITE_SUPABASE_URL: z.string().optional().default(""),
   VITE_SUPABASE_ANON_KEY: z.string().optional().default(""),
+  SUPABASE_URL: z.string().optional().default(""),
+  SUPABASE_ANON_KEY: z.string().optional().default(""),
+  // Service role key — required for secure server-side auth token verification
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(""),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
@@ -37,12 +42,18 @@ function parseEnv(): Env {
 
   const env = result.data;
 
+  // Normalise: prefer plain SUPABASE_* over VITE_SUPABASE_* on the server
+  if (!env.SUPABASE_URL && env.VITE_SUPABASE_URL)
+    env.SUPABASE_URL = env.VITE_SUPABASE_URL;
+  if (!env.SUPABASE_ANON_KEY && env.VITE_SUPABASE_ANON_KEY)
+    env.SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
+
   // Warn in dev if optional vars are missing — fail hard in production
   if (env.NODE_ENV === "production") {
     const missing: string[] = [];
     if (!env.DATABASE_URL) missing.push("DATABASE_URL");
-    if (!env.VITE_SUPABASE_URL) missing.push("VITE_SUPABASE_URL");
-    if (!env.VITE_SUPABASE_ANON_KEY) missing.push("VITE_SUPABASE_ANON_KEY");
+    if (!env.SUPABASE_URL) missing.push("SUPABASE_URL (or VITE_SUPABASE_URL)");
+    if (!env.SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
     if (missing.length) {
       throw new Error(`Missing required production env vars: ${missing.join(", ")}`);
     }

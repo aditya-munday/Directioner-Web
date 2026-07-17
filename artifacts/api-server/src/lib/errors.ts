@@ -5,6 +5,7 @@ import {
   type ErrorRequestHandler,
 } from "express";
 import { logger } from "./logger";
+import { env } from "./env";
 
 /** Structured application error — maps directly to an HTTP status code. */
 export class AppError extends Error {
@@ -23,6 +24,7 @@ export const forbidden = (msg = "Forbidden") => new AppError(403, msg);
 export const notFoundError = (msg = "Not found") => new AppError(404, msg);
 export const badRequest = (msg: string) => new AppError(400, msg);
 export const conflict = (msg: string) => new AppError(409, msg);
+export const tooManyRequests = (msg: string) => new AppError(429, msg);
 
 /** Duck-typed ZodError check — works for both zod v3 and v4 */
 function isZodError(
@@ -51,6 +53,8 @@ export const errorHandler: ErrorRequestHandler = (
   res,
   _next,
 ) => {
+  const isProd = env.NODE_ENV === "production";
+
   if (isZodError(err)) {
     res.status(422).json({
       error: "Validation error",
@@ -81,6 +85,32 @@ export const errorHandler: ErrorRequestHandler = (
     return;
   }
 
+  // Postgres foreign-key violation
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: unknown }).code === "23503"
+  ) {
+    res.status(400).json({ error: "Referenced resource does not exist" });
+    return;
+  }
+
+  // Database not configured
+  if (
+    err instanceof Error &&
+    err.message.includes("DATABASE_URL")
+  ) {
+    res.status(503).json({ error: "Database not configured" });
+    return;
+  }
+
   logger.error({ err }, "Unhandled error");
-  res.status(500).json({ error: "Internal server error" });
+
+  // In production, never leak internal error details
+  res.status(500).json({
+    error: isProd
+      ? "Internal server error"
+      : (err instanceof Error ? err.message : "Internal server error"),
+  });
 };

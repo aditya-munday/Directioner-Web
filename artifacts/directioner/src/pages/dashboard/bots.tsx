@@ -27,7 +27,7 @@ export default function Bots() {
     if (confirmDelete !== id) { setConfirmDelete(id); return; }
     setDeleting(id);
     setConfirmDelete(null);
-    try { await deleteServer(id); await refetch(); }
+    try { await deleteServer(user?.id ?? "", id); await refetch(); }
     catch (e) { console.error(e); }
     finally { setDeleting(null); }
   };
