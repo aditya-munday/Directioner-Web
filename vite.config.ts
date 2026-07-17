@@ -28,6 +28,33 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React runtime
+          'vendor-react': ['react', 'react-dom'],
+          // Animation library (large)
+          'vendor-framer': ['framer-motion'],
+          // Query / state
+          'vendor-query': ['@tanstack/react-query'],
+          // Routing
+          'vendor-router': ['wouter'],
+          // Radix UI components (shared)
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-select',
+            '@radix-ui/react-popover',
+          ],
+          // Charts
+          'vendor-charts': ['recharts'],
+          // Supabase client
+          'vendor-supabase': ['@supabase/supabase-js'],
+        },
+      },
+    },
   },
   server: {
     port,
